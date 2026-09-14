@@ -60,8 +60,32 @@
       color: #fff;
     }
 
-    .spa-nav .spa-preview-button {
+    .spa-blueprint-actions {
+      display: inline-flex;
+      align-items: stretch;
       margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .spa-blueprint-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.32rem 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 0.28rem 0 0 0.28rem;
+      background: #eef2f5;
+      color: #394957;
+      font-size: 0.88rem;
+      font-weight: 650;
+    }
+
+    .spa-blueprint-actions button {
+      margin-left: -1px;
+      border-radius: 0;
+    }
+
+    .spa-blueprint-actions button:last-child {
+      border-radius: 0 0.28rem 0.28rem 0;
     }
 
     .spa-nav .spa-export-button {
@@ -1708,8 +1732,11 @@
       <button type="button" data-tab="topology">Topology</button>
       <button type="button" data-tab="power">PoE Power</button>
       <button type="button" data-tab="design">Design</button>
-      <button type="button" data-tab="blueprint" class="spa-preview-button">Preview Blueprint PDF · ARCH D</button>
-      <button type="button" id="export-blueprint-pdf" class="spa-export-button" title="Print with Margins: Default and Background graphics enabled">Export Blueprint PDF · ARCH D</button>
+      <div class="spa-blueprint-actions" role="group" aria-label="Blueprint PDF · ARCH D">
+        <span class="spa-blueprint-label">Blueprint PDF · ARCH D</span>
+        <button type="button" data-tab="blueprint">Preview</button>
+        <button type="button" id="export-blueprint-pdf" class="spa-export-button" title="Print with Margins: Default and Background graphics enabled">Export</button>
+      </div>
     </nav>
   </header>
 
