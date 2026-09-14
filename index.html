@@ -1541,6 +1541,17 @@
       pointer-events: none !important;
     }
 
+    /*
+     * Apply the physical sheet size before window.print() switches media.
+     * This lets renderBlueprint() calculate the print scale instead of
+     * carrying the smaller on-screen preview scale into the PDF.
+     */
+    body.print-blueprint .blueprint-sheet {
+      width: 35.2in;
+      max-width: none;
+      height: 23.4in;
+    }
+
     @media print {
       html,
       body {
