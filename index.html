@@ -88,6 +88,24 @@
       border-radius: 0 0.28rem 0.28rem 0;
     }
 
+    .spa-nav .spa-preview-button {
+      border-color: #8fb4d3;
+      background: #fff;
+      color: #155b98;
+    }
+
+    .spa-nav .spa-preview-button:hover {
+      border-color: #6f9fc7;
+      background: #edf5fb;
+      color: #104c7d;
+    }
+
+    .spa-nav .spa-preview-button.is-on {
+      border-color: #5c91bc;
+      background: #d7e9f6;
+      color: #0f4f80;
+    }
+
     .spa-nav .spa-export-button {
       border-color: #1a6bb5;
       background: #1a6bb5;
@@ -98,6 +116,18 @@
     .spa-nav .spa-export-button:focus-visible {
       background: #155b98;
       border-color: #155b98;
+    }
+
+    .spa-nav .spa-export-button:active {
+      background: #0f4779;
+      border-color: #0f4779;
+    }
+
+    .spa-blueprint-actions button:focus-visible {
+      position: relative;
+      z-index: 1;
+      outline: 2px solid #79a9d0;
+      outline-offset: 1px;
     }
 
     .spa-tab {
@@ -1734,7 +1764,7 @@
       <button type="button" data-tab="design">Design</button>
       <div class="spa-blueprint-actions" role="group" aria-label="Blueprint PDF · ARCH D">
         <span class="spa-blueprint-label">Blueprint PDF · ARCH D</span>
-        <button type="button" data-tab="blueprint">Preview</button>
+        <button type="button" data-tab="blueprint" class="spa-preview-button">Preview</button>
         <button type="button" id="export-blueprint-pdf" class="spa-export-button" title="Print with Margins: Default and Background graphics enabled">Export</button>
       </div>
     </nav>
