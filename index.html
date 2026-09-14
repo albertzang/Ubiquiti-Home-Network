@@ -1367,7 +1367,7 @@
       grid-template-rows: auto minmax(0, 1fr) auto;
       width: 100%;
       max-width: 112.5rem;
-      aspect-ratio: 4 / 3;
+      aspect-ratio: 176 / 117;
       margin: 0 auto;
       padding: 0.55rem;
       border: 1px solid #17324d;
@@ -1402,7 +1402,7 @@
 
     .blueprint-grid {
       display: grid;
-      grid-template-columns: 36fr 53fr 11fr;
+      grid-template-columns: 37.5fr 54.5fr 8fr;
       min-height: 0;
       gap: 0.4rem;
       padding: 0.4rem 0;
@@ -1579,9 +1579,9 @@
       }
 
       body.print-blueprint .blueprint-sheet {
-        width: 47.2in;
+        width: 35.2in;
         max-width: none;
-        height: 35.4in;
+        height: 23.4in;
         margin: 0 auto;
       }
 
@@ -2848,7 +2848,7 @@
   <section id="tab-blueprint" class="spa-tab spa-doc" data-tab="blueprint">
   <div class="blueprint-page-shell">
     <div class="print-toolbar">
-      <button type="button" id="export-blueprint-pdf">Export Blueprint PDF · ARCH E</button>
+      <button type="button" id="export-blueprint-pdf">Export Blueprint PDF · ARCH D</button>
     </div>
     <div class="blueprint-preview">
       <div class="blueprint-sheet" id="blueprint-sheet">
@@ -2857,7 +2857,7 @@
             <h2>HOME NETWORK · INSTALLATION COORDINATION</h2>
             <p>Compact device schedule · Physical topology · Ports / cables / VLAN legend</p>
           </div>
-          <p>ARCH E · 48 × 36 IN · LANDSCAPE</p>
+          <p>ARCH D · 36 × 24 IN · LANDSCAPE</p>
         </header>
         <div class="blueprint-grid">
           <section class="blueprint-panel">
@@ -2883,7 +2883,7 @@
           <div><strong>Home Network Spec</strong>Issued for on-site coordination</div>
           <div><strong>Scope</strong>Devices · Topology · Legend</div>
           <div><strong>Sheet</strong>N-001</div>
-          <div><strong>Format</strong>ARCH E · 4:3</div>
+          <div><strong>Format</strong>ARCH D · 3:2</div>
         </footer>
       </div>
     </div>
@@ -5091,7 +5091,7 @@
         measured.forEach(function (item) {
           item.target.style.transform = "scale(" + commonScale + ")";
           item.target.style.left = item.padLeft + Math.max(0, (item.availableWidth - item.width * commonScale) / 2) + "px";
-          item.target.style.top = item.padTop + Math.max(0, (item.availableHeight - item.height * commonScale) / 2) + "px";
+          item.target.style.top = item.padTop + "px";
         });
       }
 
@@ -5122,7 +5122,7 @@
         clearPrintMode();
         document.body.classList.add(mode === "blueprint" ? "print-blueprint" : "print-design");
         pageStyle.textContent = mode === "blueprint"
-          ? "@page { size: 48in 36in; margin: 0.3in 0.4in; }"
+          ? "@page { size: 36in 24in; margin: 0.3in 0.4in; }"
           : "@page { size: 8.5in 11in; margin: 0.55in; }";
         document.head.appendChild(pageStyle);
         if (mode === "blueprint") {
