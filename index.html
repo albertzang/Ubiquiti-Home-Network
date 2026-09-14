@@ -39,6 +39,7 @@
     .spa-nav {
       display: flex;
       flex-wrap: wrap;
+      flex: 1 1 auto;
       gap: 0.25rem;
     }
 
@@ -57,6 +58,19 @@
       background: #1a6bb5;
       border-color: #1a6bb5;
       color: #fff;
+    }
+
+    .spa-nav .spa-export-button {
+      margin-left: auto;
+      border-color: #1a6bb5;
+      background: #1a6bb5;
+      color: #fff;
+    }
+
+    .spa-nav .spa-export-button:hover,
+    .spa-nav .spa-export-button:focus-visible {
+      background: #155b98;
+      border-color: #155b98;
     }
 
     .spa-tab {
@@ -1692,6 +1706,7 @@
       <button type="button" data-tab="power">PoE Power</button>
       <button type="button" data-tab="blueprint">Blueprint</button>
       <button type="button" data-tab="design">Design</button>
+      <button type="button" id="export-blueprint-pdf" class="spa-export-button" title="Print with Margins: Default and Background graphics enabled">Export Blueprint PDF · ARCH D</button>
     </nav>
   </header>
 
@@ -2858,9 +2873,6 @@
 
   <section id="tab-blueprint" class="spa-tab spa-doc" data-tab="blueprint">
   <div class="blueprint-page-shell">
-    <div class="print-toolbar">
-      <button type="button" id="export-blueprint-pdf">Export Blueprint PDF · ARCH D</button>
-    </div>
     <div class="blueprint-preview">
       <div class="blueprint-sheet" id="blueprint-sheet">
         <header class="blueprint-header">
@@ -5166,7 +5178,7 @@
   <script>
     (function () {
       var tabs = document.querySelectorAll(".spa-tab");
-      var buttons = document.querySelectorAll(".spa-nav button");
+      var buttons = document.querySelectorAll(".spa-nav button[data-tab]");
       var src = document.getElementById("legend-source");
       var dst = document.getElementById("legend-topo");
       if (src && dst && !dst.childNodes.length) dst.innerHTML = src.innerHTML;
