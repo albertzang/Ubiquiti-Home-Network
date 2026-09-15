@@ -37,9 +37,7 @@
           panel.classList.toggle("is-collapsed", collapsed);
           toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
           toggle.setAttribute("title", collapsed ? "Expand Legend from the left" : "Collapse Legend to the left");
-          var icon = toggle.querySelector("[aria-hidden]");
           var label = toggle.querySelector(".sr-only");
-          if (icon) icon.textContent = collapsed ? "›" : "‹";
           if (label) label.textContent = collapsed ? "Expand Legend" : "Collapse Legend";
           if (remember) {
             try { localStorage.setItem(storageKey, collapsed ? "1" : "0"); } catch (error) {}

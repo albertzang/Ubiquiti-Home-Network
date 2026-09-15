@@ -136,7 +136,9 @@ html, body {
     .spa-split.is-on {
       display: grid;
       grid-template-columns: 20rem minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
       min-height: 0;
+      position: relative;
       transition: grid-template-columns 180ms ease;
     }
 
@@ -146,8 +148,9 @@ html, body {
 
     .spa-legend {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       min-height: 0;
+      max-height: 100%;
       overflow: visible;
       padding: 0;
       border-right: 1px solid #ddd;
@@ -157,35 +160,54 @@ html, body {
     .spa-legend-content {
       box-sizing: border-box;
       height: 100%;
+      max-height: 100%;
       overflow: auto;
       padding: 0.7rem 0.85rem 1.2rem;
     }
 
     .spa-legend-toggle {
       position: absolute;
-      z-index: 5;
-      top: 50%;
+      z-index: 6;
+      top: 0.85rem;
       right: 0;
       display: flex;
-      width: 1.3rem;
-      height: 2.6rem;
+      width: 1.55rem;
+      height: 2.85rem;
       margin: 0;
+      padding: 0;
       align-items: center;
       justify-content: center;
-      border: 1px solid #c7d0d8;
+      border: 1px solid #7ea4c4;
       border-radius: 999px;
       background: #fff;
-      color: #465766;
-      font: 700 1rem/1 sans-serif;
-      transform: translate(50%, -50%);
+      color: #155b98;
+      box-shadow: 0 1px 4px rgba(16, 44, 66, 0.28);
+      transform: translateX(50%);
       cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .spa-legend-toggle-glyph {
+      width: 0.42rem;
+      height: 0.42rem;
+      border-left: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      margin-left: 0.14rem;
+    }
+
+    .spa-legend-toggle[aria-expanded="false"] .spa-legend-toggle-glyph {
+      transform: rotate(-135deg);
+      margin-left: 0;
+      margin-right: 0.14rem;
     }
 
     .spa-legend-toggle:hover,
     .spa-legend-toggle:focus-visible {
-      border-color: #6f9fc7;
+      border-color: #1a6bb5;
       background: #edf5fb;
-      color: #104c7d;
+      color: #0f4f80;
     }
 
     .spa-legend-toggle:focus-visible {
@@ -229,6 +251,7 @@ html, body {
     .spa-main {
       overflow: auto;
       min-width: 0;
+      min-height: 0;
       padding: 0.7rem 0.9rem 1.2rem;
     }
 
@@ -2012,19 +2035,20 @@ html, body {
       }
 
       .spa-legend {
-        overflow: hidden;
+        overflow: visible;
         border-right: none;
         border-bottom: 1px solid #ddd;
         max-height: 14rem;
       }
 
       .spa-legend.is-collapsed {
-        overflow: hidden;
+        overflow: visible;
+        max-height: 2.6rem;
         padding: 0;
       }
 
       .spa-legend.is-collapsed .spa-legend-content {
-        display: block;
+        display: none;
       }
 
       .spa-legend-content {
@@ -2032,7 +2056,9 @@ html, body {
       }
 
       .spa-legend-toggle {
-        display: none;
+        top: 0.55rem;
+        right: 0.7rem;
+        transform: none;
       }
 
       .topo-wrap {
