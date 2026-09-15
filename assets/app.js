@@ -1,6 +1,6 @@
 (async function () {
   var host = document.getElementById("spa-content-loader");
-  var names = ["devices", "topology", "design", "legend"];
+  var names = ["topology", "design"];
   var fragments;
   try {
     fragments = await Promise.all(names.map(async function (name) {
@@ -14,49 +14,8 @@
     return;
   }
 
-  var legend = fragments.pop();
   host.insertAdjacentHTML("beforebegin", fragments.join("\n"));
   host.remove();
-  ["legend-source", "legend-topo"].forEach(function (id) {
-    var target = document.getElementById(id);
-    if (!target) return;
-    var content = target.querySelector(".spa-legend-content");
-    if (content) content.innerHTML = legend;
-    else target.innerHTML = legend;
-  });
-
-(function () {
-      Array.prototype.forEach.call(document.querySelectorAll("[data-collapsible-legend]"), function (panel) {
-        var section = panel.closest(".spa-split");
-        var toggle = panel.querySelector(".spa-legend-toggle");
-        if (!section || !toggle) return;
-        var storageKey = "legendCollapsed:" + (panel.getAttribute("data-legend-key") || section.getAttribute("data-tab") || "default");
-
-        function setCollapsed(collapsed, remember) {
-          section.classList.toggle("legend-collapsed", collapsed);
-          panel.classList.toggle("is-collapsed", collapsed);
-          toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
-          toggle.setAttribute("title", collapsed ? "Expand Legend from the left" : "Collapse Legend to the left");
-          var icon = toggle.querySelector("[aria-hidden]");
-          var label = toggle.querySelector(".sr-only");
-          if (icon) icon.textContent = collapsed ? "›" : "‹";
-          if (label) label.textContent = collapsed ? "Expand Legend" : "Collapse Legend";
-          if (remember) {
-            try { localStorage.setItem(storageKey, collapsed ? "1" : "0"); } catch (error) {}
-          }
-          setTimeout(function () {
-            window.dispatchEvent(new Event("resize"));
-          }, 190);
-        }
-
-        var saved = false;
-        try { saved = localStorage.getItem(storageKey) === "1"; } catch (error) {}
-        setCollapsed(saved, false);
-        toggle.addEventListener("click", function () {
-          setCollapsed(!panel.classList.contains("is-collapsed"), true);
-        });
-      });
-    })();
 
     (function () {
       var article = document.querySelector("#tab-design .spa-article");
@@ -94,14 +53,46 @@
       toc.appendChild(title);
       toc.appendChild(list);
 
-      if (!("IntersectionObserver" in window)) return;
-      var observer = new IntersectionObserver(function (entries) {
-        var visible = entries.filter(function (entry) { return entry.isIntersecting; });
-        if (!visible.length) return;
-        var top = visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })[0];
+      if (!("IntersectionObserver" in window)) {
+        scroller.addEventListener("scroll", updateTocFromScroll);
+        updateTocFromScroll();
+        return;
+      }
+
+      function revealTocLink(link) {
+        if (!link || !toc) return;
+        var tocRect = toc.getBoundingClientRect();
+        var linkRect = link.getBoundingClientRect();
+        var margin = Math.max(36, toc.clientHeight * 0.28);
+        if (linkRect.top >= tocRect.top + 8 && linkRect.bottom <= tocRect.bottom - 8) return;
+        var delta = linkRect.top - tocRect.top - margin;
+        toc.scrollTo({ top: Math.max(0, toc.scrollTop + delta), behavior: "auto" });
+      }
+
+      function updateTocFromScroll() {
+        var origin = scroller.getBoundingClientRect().top + 28;
+        var found = links[0];
         links.forEach(function (item) {
-          item.link.classList.toggle("is-active", item.heading === top.target);
+          if (item.heading.getBoundingClientRect().top <= origin) found = item;
         });
+        links.forEach(function (item) {
+          item.link.classList.toggle("is-active", item === found);
+        });
+        if (found) revealTocLink(found.link);
+      }
+
+      var tocRaf = 0;
+      scroller.addEventListener("scroll", function () {
+        if (tocRaf) return;
+        tocRaf = requestAnimationFrame(function () {
+          tocRaf = 0;
+          updateTocFromScroll();
+        });
+      }, { passive: true });
+      updateTocFromScroll();
+
+      var observer = new IntersectionObserver(function () {
+        updateTocFromScroll();
       }, { root: scroller, rootMargin: "0px 0px -72% 0px", threshold: 0 });
       links.forEach(function (item) { observer.observe(item.heading); });
     })();
@@ -279,7 +270,7 @@
           up: [P("drop-media-up", "gbe10", { poe: "ppp", title: "10G ← Pro XG" })],
           down: [P("drop-media-dn", "gbe10", { poe: "ppp", title: "10G PoE+++ pass-through → Flex 2.5G at PoE+", child: "media-flex" })] },
         { id: "media-flex", vlan: "management", ltr: true, name: "USW-Flex-2.5G-8", loc: "Basement/Media Room", href: "https://store.ui.com/us/en/category/switching-utility/products/usw-flex-2-5g-8", info: "Non-PoE model. C6A home-run ends at the wall; a Cat6 short patch feeds its 10G RJ45/SFP+ combo uplink and PoE+ input. Eight 2.5G downlinks have no PoE output.",
-          poeBar: { used: 14, cap: 30 },
+          devicePower: { value: "14W" },
           up: [
             P("media-flex-up", "gbe10", { poe: "plus", title: "10G RJ45 uplink · PoE+ input" }),
             P("media-flex-sfp", "sfp", { t: "SFP+", title: "SFP+ combo alternative · unused", idle: true })
@@ -2101,6 +2092,210 @@
         });
       }
 
+      function svgNode(name, attrs, text) {
+        var el = document.createElementNS("http://www.w3.org/2000/svg", name);
+        Object.keys(attrs || {}).forEach(function (key) {
+          el.setAttribute(key, attrs[key]);
+        });
+        if (text != null) el.textContent = text;
+        return el;
+      }
+
+      function legendUse(href, x, y, size, color) {
+        var g = svgNode("g", { transform: "translate(" + x + " " + y + ")", color: color || "#141414" });
+        var nested = svgNode("svg", { x: "0", y: "0", width: String(size), height: String(size), viewBox: "0 0 20 20" });
+        nested.appendChild(svgNode("use", { href: href, fill: "currentColor" }));
+        g.appendChild(nested);
+        return g;
+      }
+
+      function legendChip(x, y, spec) {
+        var g = svgNode("g", { transform: "translate(" + x + " " + y + ")" });
+        var size = 26;
+        var icon = 14;
+        var inset = (size - icon) / 2;
+        var rect = svgNode("rect", { x: "0", y: "0", width: String(size), height: String(size), rx: "4" });
+        if (spec.kind === "fill") {
+          rect.setAttribute("fill", spec.color);
+        } else if (spec.kind === "sfp") {
+          rect.setAttribute("fill", "#2b2b2b");
+        } else if (spec.kind === "other") {
+          rect.setAttribute("fill", "#c4785a");
+        } else {
+          rect.setAttribute("fill", "#fff");
+          rect.setAttribute("stroke", spec.stroke || "#666");
+          rect.setAttribute("stroke-width", "1.5");
+        }
+        g.appendChild(rect);
+        if (spec.kind === "hollow") {
+          g.appendChild(legendUse(spec.href, inset, inset, icon, "#333"));
+        } else if (spec.kind === "sfp" || spec.kind === "other") {
+          g.appendChild(svgNode("text", {
+            x: String(size / 2), y: "17", fill: "#fff", "font-size": "7", "font-weight": "700",
+            "text-anchor": "middle", "font-family": "system-ui, sans-serif", "letter-spacing": "-0.04em"
+          }, spec.t || ""));
+        }
+        return { node: g, width: size };
+      }
+
+      function legendCard(title, width, innerH) {
+        var PADX = 14;
+        var PADY = 14;
+        var HEAD = 18;
+        var height = PADY * 2 + HEAD + innerH;
+        var g = svgNode("g");
+        g.appendChild(svgNode("rect", {
+          x: "0", y: "0", width: String(width), height: String(height),
+          rx: "5", fill: "#fff", stroke: "#bbb", "stroke-width": "1"
+        }));
+        g.appendChild(svgNode("text", {
+          x: String(PADX), y: String(PADY + 12), "font-size": "10", "font-weight": "700",
+          "font-family": "system-ui, sans-serif", fill: "#263746", "letter-spacing": "0.05em"
+        }, title));
+        g.setAttribute("data-pad-x", String(PADX));
+        g.setAttribute("data-pad-y", String(PADY));
+        g.setAttribute("data-head", String(HEAD));
+        g.setAttribute("data-width", String(width));
+        g.setAttribute("data-height", String(height));
+        return g;
+      }
+
+      function buildLegendGroup(colW) {
+        var ports = [
+          { kind: "fill", color: "#f0b429", label: "100M RJ45" },
+          { kind: "fill", color: "#38cc65", label: "1G RJ45" },
+          { kind: "fill", color: "#99c5ff", label: "2.5G RJ45" },
+          { kind: "fill", color: "#3a9fcb", label: "10G RJ45" },
+          { kind: "sfp", t: "SFP+", label: "SFP+" },
+          { kind: "sfp", t: "SFP28", label: "SFP28" },
+          { kind: "hollow", href: "#udc-poe", label: "PoE · ≤15.4W" },
+          { kind: "hollow", href: "#udc-poe-plus", label: "PoE+ · ≤30W" },
+          { kind: "hollow", href: "#udc-poe-plusplus", label: "PoE++ · ≤60W" },
+          { kind: "hollow", href: "#udc-poe-plusplusplus", label: "PoE+++ · ≤90W" },
+          { kind: "hollow", href: "#udc-wan", label: "WAN" },
+          { kind: "other", t: "F", label: "Fiber" },
+          { kind: "other", t: "USB-C", label: "USB-C" },
+          { kind: "other", t: "USB-2", label: "USB 2.0" },
+          { kind: "other", t: "USB-3", label: "USB 3.0 / 3.2" },
+          { kind: "other", t: "HDMI", label: "HDMI" },
+          { kind: "other", t: "DP", label: "DisplayPort" },
+          { kind: "other", t: "COM", label: "RS232 / Console" },
+          { kind: "other", t: "CAN", label: "CAN" },
+          { kind: "other", t: "REX", label: "Request to Exit" },
+          { kind: "other", t: "DPS", label: "Door Position Sensor" },
+          { kind: "other", t: "LOCK", label: "Lock relay" }
+        ];
+        var cables = [
+          { color: "#e65100", label: "Cat6A · Type 4 / 4PPoE" },
+          { color: "#1565c0", label: "Cat6 · Type 4 / 4PPoE" },
+          { color: "#111111", label: "10G SFP+ DAC" },
+          { color: "#00897b", label: "CAN" },
+          { color: "#8e24aa", label: "12V Lock / DPS" }
+        ];
+        var vlans = [
+          { color: "#005ea8", label: "VLAN 10 · Management", sub: "UniFi network gear" },
+          { color: "#2e7d32", label: "VLAN 20 · Trusted", sub: "Personal devices · not shown" },
+          { color: "#6a3d9a", label: "VLAN 30 · Servers", sub: "Mac Studio · NAS · HA" },
+          { color: "#a15c00", label: "VLAN 40 · IoT / Energy", sub: "Wallpanels · USL · Powerwall" },
+          { color: "#b3263e", label: "VLAN 50 · Protect / Access", sub: "Cameras · door controllers" },
+          { color: "#007c7a", label: "VLAN 60 · Guest", sub: "Guest clients · not shown" }
+        ];
+
+        var ROW = 30;
+        var VLAN_ROW = 28;
+        var LABEL = { "font-size": "11.2", "font-family": "system-ui, sans-serif", fill: "#1a1a1a" };
+        var root = svgNode("g", { id: "topo-legend", "font-family": "system-ui, sans-serif" });
+        var PADX = 14;
+        var PADY = 14;
+        var HEAD = 18;
+
+        var portG = legendCard("PORTS", colW, ports.length * ROW);
+        ports.forEach(function (item, row) {
+          var y = PADY + HEAD + row * ROW;
+          var chip = legendChip(PADX, y, item);
+          portG.appendChild(chip.node);
+          portG.appendChild(svgNode("text", Object.assign({
+            x: String(PADX + chip.width + 8), y: String(y + 17)
+          }, LABEL), item.label));
+        });
+
+        var cableG = legendCard("CABLES", colW, cables.length * ROW);
+        cables.forEach(function (item, row) {
+          var y = PADY + HEAD + row * ROW + 12;
+          cableG.appendChild(svgNode("rect", {
+            x: String(PADX), y: String(y), width: "26", height: "4", rx: "2", fill: item.color
+          }));
+          cableG.appendChild(svgNode("text", Object.assign({
+            x: String(PADX + 34), y: String(y + 5)
+          }, LABEL), item.label));
+        });
+
+        var vlanG = legendCard("VLANS", colW, vlans.length * VLAN_ROW);
+        vlans.forEach(function (item, row) {
+          var y = PADY + HEAD + row * VLAN_ROW;
+          vlanG.appendChild(svgNode("rect", {
+            x: String(PADX), y: String(y + 6), width: "22", height: "12", rx: "2",
+            fill: item.color, stroke: "rgba(0,0,0,0.22)", "stroke-width": "1"
+          }));
+          vlanG.appendChild(svgNode("text", Object.assign({
+            x: String(PADX + 30), y: String(y + 12)
+          }, LABEL), item.label));
+          vlanG.appendChild(svgNode("text", {
+            x: String(PADX + 30), y: String(y + 23), fill: "#68737f", "font-size": "9",
+            "font-family": "system-ui, sans-serif"
+          }, item.sub));
+        });
+
+        root.appendChild(portG);
+        root.appendChild(cableG);
+        root.appendChild(vlanG);
+        root.setAttribute("data-port-h", portG.getAttribute("data-height"));
+        root.setAttribute("data-cable-h", cableG.getAttribute("data-height"));
+        root.setAttribute("data-vlan-h", vlanG.getAttribute("data-height"));
+        return root;
+      }
+
+      function layoutLegend() {
+        var old = svg.querySelector("#topo-legend");
+        if (old) old.remove();
+        var coreRight = 0;
+        var drawingRight = 0;
+        var nahTop = PAD;
+        Object.keys(els).forEach(function (id) {
+          if (nested[id]) return;
+          var el = els[id];
+          var right = el.offsetLeft + el.offsetWidth;
+          drawingRight = Math.max(drawingRight, right);
+          if (id === "nah" || id === "udm" || id === "xg") {
+            coreRight = Math.max(coreRight, right);
+          }
+          if (id === "nah") nahTop = el.offsetTop;
+        });
+        var gap = GAP_X;
+        var colW = 236;
+        var rightX = drawingRight - colW;
+        var midX = rightX - gap - colW;
+        var g = buildLegendGroup(colW);
+        var portG = g.childNodes[0];
+        var cableG = g.childNodes[1];
+        var vlanG = g.childNodes[2];
+        var cableH = parseFloat(cableG.getAttribute("data-height")) || 0;
+        var vlanH = parseFloat(vlanG.getAttribute("data-height")) || 0;
+        var portH = parseFloat(portG.getAttribute("data-height")) || 0;
+        var vlanY = nahTop + cableH + gap;
+        portG.setAttribute("transform", "translate(" + Math.round(midX) + " " + Math.round(nahTop) + ")");
+        cableG.setAttribute("transform", "translate(" + Math.round(rightX) + " " + Math.round(nahTop) + ")");
+        vlanG.setAttribute("transform", "translate(" + Math.round(rightX) + " " + Math.round(vlanY) + ")");
+        var maxH = Math.max(portH, cableH + gap + vlanH);
+        if (nahTop + maxH + PAD > stage.offsetHeight) {
+          stage.style.height = Math.ceil(nahTop + maxH + PAD) + "px";
+        }
+        svg.appendChild(g);
+        svg.setAttribute("viewBox", "0 0 " + stage.offsetWidth + " " + stage.offsetHeight);
+        svg.setAttribute("width", stage.offsetWidth);
+        svg.setAttribute("height", stage.offsetHeight);
+      }
+
       function clampOrigin() {
         var minX = Infinity, minY = Infinity;
         Object.keys(els).forEach(function (id) {
@@ -2235,10 +2430,14 @@
         alignXgBranchBottoms();
         pinXgPorts();
         paintLinks();
+        layoutLegend();
       }
 
       window.addEventListener("resize", function () {
-        if (canvas.offsetWidth > 40) paintLinks();
+        if (canvas.offsetWidth > 40) {
+          paintLinks();
+          layoutLegend();
+        }
       });
       window.relayoutTopo = relayout;
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () {
@@ -2255,11 +2454,30 @@
       var exportButton = document.getElementById("export-page-pdf");
       var pageStyle = document.createElement("style");
       pageStyle.id = "print-page-size";
-      var currentTab = "devices";
+      var currentTab = "topology";
+
+      /*
+       * Both sheets go through the browser's own PDF writer, so type, rules and
+       * port chips stay vector instead of being rasterised by a canvas step.
+       * Sheet boxes are declared in inches (1in === 96px), which lets the
+       * topology fit scale be measured on screen before print media applies.
+       *
+       * Design width is set by the widest schedule: the device list needs
+       * 12.6in at 9pt with no cell wrapping, so 18in is the smallest
+       * architectural sheet dimension that clears it.
+       */
       var papers = {
-        devices: { label: "Arch C Portrait", filename: "Home-Network-Devices-Arch-C.pdf" },
-        topology: { label: "Arch C Landscape", filename: "Home-Network-Topology-Arch-C.pdf" },
-        design: { label: "US Letter", filename: "Home-Network-Design-Letter.pdf" }
+        topology: {
+          page: "24in 18in",
+          margin: "0.3in",
+          sheet: { w: 23.35, h: 17.35 },
+          label: "ARCH C · 24 × 18 IN · LANDSCAPE"
+        },
+        design: {
+          page: "18in 12in",
+          margin: "0.55in 0.7in",
+          label: "ARCH B · 18 × 12 IN · LANDSCAPE"
+        }
       };
 
       function waitFrame() {
@@ -2268,81 +2486,19 @@
         });
       }
 
-      function sourceFor(kind) {
-        if (kind === "legend") return document.querySelector("#legend-source .spa-legend-content") || document.querySelector("#legend-topo .spa-legend-content");
-        if (kind === "devices") return document.querySelector("#tab-devices .spa-main > table");
-        if (kind === "topology") return document.querySelector("#topo-canvas .topo-stage");
-        if (kind === "design") return document.querySelector("#tab-design .spa-article");
-        return null;
-      }
-
-      function stripCloneIds(root, preserveTopologyMarkers) {
-        if (!root) return;
-        root.removeAttribute("id");
-        Array.prototype.forEach.call(root.querySelectorAll("[id]"), function (el) {
-          if (!preserveTopologyMarkers || !/^topo-arrow-/.test(el.id)) el.removeAttribute("id");
-        });
-        Array.prototype.forEach.call(root.querySelectorAll("a, button"), function (el) {
-          el.setAttribute("tabindex", "-1");
-        });
-      }
-
-      function addBreakOpportunities(root) {
-        var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-        var node;
-        while ((node = walker.nextNode())) {
-          node.nodeValue = node.nodeValue.replace(/\//g, "/\u200b");
-        }
-      }
-
-      function cloneSource(kind) {
-        var source = sourceFor(kind);
+      function cloneTopology() {
+        var source = document.querySelector("#topo-canvas .topo-stage");
         if (!source) return null;
         var clone = source.cloneNode(true);
-        stripCloneIds(clone, kind === "topology");
-        if (kind === "devices") {
-          Array.prototype.forEach.call(clone.querySelectorAll("tbody tr > td:last-child"), addBreakOpportunities);
-          clone.classList.add("blueprint-devices-table");
-        }
-        if (kind === "legend") clone.className = "blueprint-legend";
-        return clone;
-      }
-
-      function inlineSvgUses(root) {
-        if (!root) return;
-        Array.prototype.forEach.call(root.querySelectorAll("svg use"), function (use) {
-          var href = use.getAttribute("href") || use.getAttributeNS("http://www.w3.org/1999/xlink", "href") || "";
-          var id = href.split("#").pop();
-          var symbol = id && document.getElementById(id);
-          var svg = use.closest("svg");
-          if (!symbol || !svg) return;
-          if (!svg.getAttribute("viewBox") && symbol.getAttribute("viewBox")) {
-            svg.setAttribute("viewBox", symbol.getAttribute("viewBox"));
-          }
-          svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-          var color = window.getComputedStyle(svg).color || "#141414";
-          var sized = window.getComputedStyle(svg);
-          var width = parseFloat(sized.width);
-          var height = parseFloat(sized.height);
-          if (width && height) {
-            svg.setAttribute("width", String(width));
-            svg.setAttribute("height", String(height));
-          }
-          Array.prototype.forEach.call(symbol.childNodes, function (child) {
-            if (child.nodeType !== 1) return;
-            var copy = child.cloneNode(true);
-            if ((copy.getAttribute("fill") || "").toLowerCase() === "currentcolor") {
-              copy.setAttribute("fill", color);
-            }
-            Array.prototype.forEach.call(copy.querySelectorAll("[fill]"), function (el) {
-              if ((el.getAttribute("fill") || "").toLowerCase() === "currentcolor") {
-                el.setAttribute("fill", color);
-              }
-            });
-            svg.appendChild(copy);
-          });
-          use.parentNode.removeChild(use);
+        clone.removeAttribute("id");
+        Array.prototype.forEach.call(clone.querySelectorAll("[id]"), function (el) {
+          /* arrow markers stay: the cloned edges still point at url(#topo-arrow-*) */
+          if (!/^topo-arrow-/.test(el.id)) el.removeAttribute("id");
         });
+        Array.prototype.forEach.call(clone.querySelectorAll("a, button"), function (el) {
+          el.setAttribute("tabindex", "-1");
+        });
+        return clone;
       }
 
       function fitTarget(target) {
@@ -2361,7 +2517,7 @@
         var availableHeight = Math.max(1, viewport.clientHeight - padTop - padBottom);
         var width = Math.max(content.scrollWidth, content.offsetWidth, 1);
         var height = Math.max(content.scrollHeight, content.offsetHeight, 1);
-        var scale = Math.min(availableWidth / width, availableHeight / height, 1);
+        var scale = Math.min(availableWidth / width, availableHeight / height);
         if (!isFinite(scale) || scale <= 0) return null;
         target.style.transform = "scale(" + scale + ")";
         target.style.left = padLeft + Math.max(0, (availableWidth - width * scale) / 2) + "px";
@@ -2369,228 +2525,153 @@
         return scale;
       }
 
-      function buildSheet(kind) {
+      /*
+       * The sheet is a real element sized in inches, so the scale measured by
+       * fitTarget() is the scale the printer ends up drawing at. Only the sheet
+       * carries a frame; the drawing area is padding alone.
+       */
+      function buildSheet(spec) {
         if (!exportRoot) return null;
         exportRoot.innerHTML = "";
         var sheet = document.createElement("div");
-        sheet.className = "export-sheet " + (kind === "devices" ? "is-portrait" : "is-landscape");
-        var title = kind === "devices" ? "HOME NETWORK · DEVICES SCHEDULE" : "HOME NETWORK · PHYSICAL TOPOLOGY";
-        var subtitle = kind === "devices" ? "Legend · Compact device schedule" : "Legend · Physical topology";
-        var size = kind === "devices" ? "ARCH C · 18 × 24 IN · PORTRAIT" : "ARCH C · 24 × 18 IN · LANDSCAPE";
-        var panelTitle = kind === "devices" ? "A · Compact Devices Schedule" : "B · Network Topology";
+        sheet.className = "export-sheet";
+        sheet.style.width = spec.sheet.w + "in";
+        sheet.style.height = spec.sheet.h + "in";
         sheet.innerHTML =
-          '<header class="blueprint-header"><div><h2>' + title + '</h2><p>' + subtitle + '</p></div><p>' + size + '</p></header>' +
-          '<div class="blueprint-grid export-grid-' + kind + '">' +
-          '<section class="blueprint-panel"><h3>Legend</h3><div class="blueprint-viewport"><div class="blueprint-scale" data-export="legend"></div></div></section>' +
-          '<section class="blueprint-panel"><h3>' + panelTitle + '</h3><div class="blueprint-viewport"><div class="blueprint-scale" data-export="main"></div></div></section>' +
-          '</div>' +
+          '<header class="blueprint-header"><div><h2>HOME NETWORK</h2><p>Physical Topology</p></div><p>' + spec.label + '</p></header>' +
+          '<div class="blueprint-viewport"><div class="blueprint-scale" data-export="main"></div></div>' +
           '<footer class="blueprint-title-block">' +
           '<div><strong>Home Network Spec</strong>Issued for on-site coordination</div>' +
-          '<div><strong>Scope</strong>' + (kind === "devices" ? "Devices · Legend" : "Topology · Legend") + '</div>' +
-          '<div><strong>Sheet</strong>' + (kind === "devices" ? "N-001" : "N-002") + '</div>' +
-          '<div><strong>Format</strong>' + (kind === "devices" ? "ARCH C · Portrait" : "ARCH C · Landscape") + '</div>' +
+          '<div><strong>Scope</strong>Physical Topology</div>' +
+          '<div><strong>Sheet</strong>N-001</div>' +
+          '<div><strong>Format</strong>ARCH C · Landscape</div>' +
           '</footer>';
         exportRoot.appendChild(sheet);
-        var legendTarget = sheet.querySelector('[data-export="legend"]');
         var mainTarget = sheet.querySelector('[data-export="main"]');
-        var legend = cloneSource("legend");
-        var main = cloneSource(kind);
-        if (legend && legendTarget) legendTarget.appendChild(legend);
+        var main = cloneTopology();
         if (main && mainTarget) mainTarget.appendChild(main);
         return sheet;
       }
 
-      function pdfCtor() {
-        return window.jspdf && window.jspdf.jsPDF;
-      }
-
-      function captureNode(node, scale) {
-        inlineSvgUses(node);
-        return window.html2canvas(node, {
-          scale: scale || 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: "#ffffff",
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: Math.max(node.scrollWidth, node.offsetWidth),
-          windowHeight: Math.max(node.scrollHeight, node.offsetHeight),
-          onclone: function (_doc, cloned) {
-            inlineSvgUses(cloned);
-          }
-        });
-      }
-
-      async function exportSheetPdf(kind) {
-        if (kind === "topology") {
-          document.body.classList.add("export-source-measure");
-          if (typeof window.relayoutTopo === "function") window.relayoutTopo();
-          await waitFrame();
-        }
-        var sheet = buildSheet(kind);
-        await waitFrame();
-        Array.prototype.forEach.call(sheet.querySelectorAll(".blueprint-scale"), fitTarget);
-        await waitFrame();
-        document.body.classList.remove("export-source-measure");
-        var canvas = await captureNode(sheet, 1.75);
-        exportRoot.innerHTML = "";
-        var PDF = pdfCtor();
-        var pdf = kind === "devices"
-          ? new PDF({ unit: "in", format: [18, 24], orientation: "portrait", compress: true })
-          : new PDF({ unit: "in", format: [24, 18], orientation: "landscape", compress: true });
-        var pageW = kind === "devices" ? 18 : 24;
-        var pageH = kind === "devices" ? 24 : 18;
-        var data = canvas.toDataURL("image/jpeg", 0.92);
-        pdf.addImage(data, "JPEG", 0, 0, pageW, pageH);
-        return pdf;
-      }
-
-      async function exportDesignPdf() {
-        var source = sourceFor("design");
-        if (!source || !exportRoot) throw new Error("Design article not found");
-        exportRoot.innerHTML = "";
-        var wrap = document.createElement("div");
-        wrap.className = "export-article";
-        var clone = cloneSource("design");
-        wrap.appendChild(clone);
-        exportRoot.appendChild(wrap);
-        await waitFrame();
-        var canvas = await captureNode(wrap, 2);
-        exportRoot.innerHTML = "";
-        var PDF = pdfCtor();
-        var pdf = new PDF({ unit: "in", format: "letter", orientation: "portrait", compress: true });
-        var pageW = 8.5;
-        var pageH = 11;
-        var margin = 0.55;
-        var contentW = pageW - margin * 2;
-        var contentH = pageH - margin * 2;
-        var pxPageH = Math.max(1, Math.floor(canvas.width * contentH / contentW));
-        var offset = 0;
-        var page = 0;
-        while (offset < canvas.height) {
-          var sliceH = Math.min(pxPageH, canvas.height - offset);
-          var pageCanvas = document.createElement("canvas");
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = sliceH;
-          var ctx = pageCanvas.getContext("2d");
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-          ctx.drawImage(canvas, 0, offset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-          if (page) pdf.addPage();
-          var sliceIn = sliceH * contentW / canvas.width;
-          pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.92), "JPEG", margin, margin, contentW, sliceIn);
-          offset += pxPageH;
-          page += 1;
-        }
-        return pdf;
-      }
-
-      async function pickSaveTarget(filename) {
-        if (typeof window.showSaveFilePicker !== "function") return null;
-        try {
-          return await window.showSaveFilePicker({
-            suggestedName: filename,
-            types: [{ description: "PDF document", accept: { "application/pdf": [".pdf"] } }]
-          });
-        } catch (error) {
-          if (error && error.name === "AbortError") throw error;
-          return null;
-        }
-      }
-
-      async function savePdf(pdf, filename, handle) {
-        var blob = pdf.output("blob");
-        if (handle) {
-          var writable = await handle.createWritable();
-          await writable.write(blob);
-          await writable.close();
-          return;
-        }
-        var link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(function () {
-          URL.revokeObjectURL(link.href);
-          link.remove();
-        }, 1000);
-      }
-
       function clearPrintMode() {
-        document.body.classList.remove("print-blueprint", "print-design", "print-devices", "print-topology", "export-source-measure");
+        document.body.classList.remove("print-design", "print-topology", "export-source-measure");
         if (pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
         if (exportRoot) exportRoot.innerHTML = "";
+        if (typeof window.relayoutTopo === "function") window.relayoutTopo();
       }
 
-      function printFallback(kind) {
+      /*
+       * The topology is cloned while the source tab is forced to its full
+       * drawing width, so a narrow window never bakes a cramped layout into the
+       * sheet.
+       */
+      async function stageTopologySheet(spec) {
+        document.body.classList.add("export-source-measure");
+        if (typeof window.relayoutTopo === "function") window.relayoutTopo();
+        await waitFrame();
+        var sheet = buildSheet(spec);
+        await waitFrame();
+        document.body.classList.remove("export-source-measure");
+        if (sheet) fitTarget(sheet.querySelector('[data-export="main"]'));
+        return sheet;
+      }
+
+      async function runPrint(kind) {
+        var spec = papers[kind];
+        if (!spec) return;
         clearPrintMode();
-        if (kind === "design") {
-          document.body.classList.add("print-design");
-          pageStyle.textContent = "@page { size: 8.5in 11in; margin: 0.55in; }";
-          document.head.appendChild(pageStyle);
-          setTimeout(function () { window.print(); }, 30);
-          return;
-        }
-        document.body.classList.add(kind === "devices" ? "print-devices" : "print-topology");
-        pageStyle.textContent = kind === "devices"
-          ? "@page { size: 18in 24in; margin: 0; }"
-          : "@page { size: 24in 18in; margin: 0; }";
+        pageStyle.textContent = "@page { size: " + spec.page + "; margin: " + spec.margin + "; }";
         document.head.appendChild(pageStyle);
-        var ready = kind === "topology"
-          ? (document.body.classList.add("export-source-measure"), typeof window.relayoutTopo === "function" && window.relayoutTopo(), waitFrame())
-          : waitFrame();
-        ready.then(function () {
-          var sheet = buildSheet(kind);
-          return waitFrame().then(function () { return sheet; });
-        }).then(function (sheet) {
-          document.body.classList.remove("export-source-measure");
-          if (sheet) Array.prototype.forEach.call(sheet.querySelectorAll(".blueprint-scale"), fitTarget);
-          setTimeout(function () { window.print(); }, 80);
-        });
+        document.body.classList.add(kind === "design" ? "print-design" : "print-topology");
+        if (kind === "topology") await stageTopologySheet(spec);
+        await waitFrame();
+        window.print();
       }
 
       function setExportLabel(key) {
         currentTab = key;
-        var spec = papers[key] || papers.devices;
-        if (exportButton) exportButton.textContent = "Export PDF · " + spec.label;
+        if (exportButton) exportButton.textContent = "Export PDF";
       }
 
       window.setExportLabel = setExportLabel;
 
+      /*
+       * The browser writes the vector PDF, but two dialog defaults still spoil a
+       * sheet: page headers stamp over the frame, and any scale other than 100%
+       * throws off the drawing scale. State the settings once, then stay quiet.
+       */
+      var HINT_KEY = "hn-export-hint-muted";
+
+      function buildHint() {
+        var hint = document.createElement("div");
+        hint.className = "print-hint";
+        hint.hidden = true;
+        hint.setAttribute("role", "dialog");
+        hint.setAttribute("aria-label", "Export PDF settings");
+        hint.innerHTML =
+          '<p class="print-hint-title">Export PDF</p>' +
+          '<p class="print-hint-sheet" data-hint="sheet"></p>' +
+          '<ul>' +
+          '<li>Destination · <strong>Save as PDF</strong></li>' +
+          '<li>Paper size · <strong data-hint="paper"></strong></li>' +
+          '<li>Margins &amp; Scale · <strong>Default</strong> / <strong>100%</strong></li>' +
+          '<li>Headers and footers · <strong>off</strong></li>' +
+          '</ul>' +
+          '<label class="print-hint-mute"><input type="checkbox" data-hint="mute"> Skip this reminder next time</label>' +
+          '<div class="print-hint-actions">' +
+          '<button type="button" data-hint="cancel">Cancel</button>' +
+          '<button type="button" class="is-primary" data-hint="go">Open print dialog</button>' +
+          '</div>';
+        document.body.appendChild(hint);
+        return hint;
+      }
+
       if (exportButton) {
-        exportButton.addEventListener("click", async function () {
-          var key = currentTab;
-          var spec = papers[key];
+        var hint = buildHint();
+        var muted = false;
+        try { muted = window.localStorage.getItem(HINT_KEY) === "1"; } catch (error) { muted = false; }
+
+        function startPrint(kind) {
+          hint.hidden = true;
+          exportButton.disabled = true;
+          runPrint(kind).catch(function (error) {
+            console.error(error);
+            clearPrintMode();
+          }).then(function () {
+            exportButton.disabled = false;
+          });
+        }
+
+        exportButton.addEventListener("click", function () {
+          var spec = papers[currentTab];
           if (!spec) return;
-          var handle;
-          try {
-            handle = await pickSaveTarget(spec.filename);
-          } catch (error) {
-            if (error && error.name === "AbortError") return;
-          }
-          if (!window.html2canvas || !pdfCtor()) {
-            printFallback(key);
+          if (muted) {
+            startPrint(currentTab);
             return;
           }
-          exportButton.disabled = true;
-          var previous = exportButton.textContent;
-          exportButton.textContent = "Exporting…";
-          try {
-            var pdf = key === "design" ? await exportDesignPdf() : await exportSheetPdf(key);
-            await savePdf(pdf, spec.filename, handle);
-          } catch (error) {
-            if (!(error && error.name === "AbortError")) {
-              console.error(error);
-              printFallback(key);
-            }
-          } finally {
-            exportButton.disabled = false;
-            exportButton.textContent = previous;
-            if (exportRoot) exportRoot.innerHTML = "";
-            document.body.classList.remove("export-source-measure");
+          hint.querySelector('[data-hint="sheet"]').textContent = spec.label;
+          hint.querySelector('[data-hint="paper"]').textContent = spec.page.replace("in ", " × ").replace("in", " in");
+          hint.hidden = false;
+          hint.querySelector('[data-hint="go"]').focus();
+        });
+
+        hint.addEventListener("click", function (event) {
+          var action = event.target.getAttribute("data-hint");
+          if (action !== "go" && action !== "cancel") return;
+          var check = hint.querySelector('[data-hint="mute"]');
+          if (check && check.checked) {
+            muted = true;
+            try { window.localStorage.setItem(HINT_KEY, "1"); } catch (error) { /* private mode */ }
           }
+          if (action === "cancel") {
+            hint.hidden = true;
+            return;
+          }
+          startPrint(currentTab);
+        });
+
+        hint.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") hint.hidden = true;
         });
       }
 
@@ -2600,12 +2681,10 @@
 (function () {
       var tabs = document.querySelectorAll(".spa-tab");
       var buttons = document.querySelectorAll(".spa-nav button[data-tab]");
-      var src = document.getElementById("legend-source");
-      var dst = document.getElementById("legend-topo");
-      if (src && dst && !dst.childNodes.length) dst.innerHTML = src.innerHTML;
+      var known = { topology: true, design: true };
 
       function show(id) {
-        var key = id || "devices";
+        var key = known[id] ? id : "topology";
         Array.prototype.forEach.call(tabs, function (t) {
           t.classList.toggle("is-on", t.getAttribute("data-tab") === key);
         });
@@ -2627,6 +2706,6 @@
       });
 
       var initial = (location.hash || "").replace("#", "");
-      show(initial || "devices");
+      show(initial || "topology");
     })();
 })();
