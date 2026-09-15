@@ -1,0 +1,527 @@
+<section id="tab-design" class="spa-tab spa-doc" data-tab="design">
+  <article class="spa-article">
+  <div class="print-toolbar">
+    <button type="button" id="export-design-pdf">Export Design PDF · US Letter</button>
+  </div>
+  <h2>设计说明</h2>
+  <p class="lede">Whole-home hardware inventory: ISP / WAN, gateway, switching, room drops, Wi‑Fi, Protect &amp; Access, Home Assistant, NAS, and IoT. <strong>PoE Uplink</strong> 中继设备：大字 <span class="poe-lbl">w/</span> = with PoE output；小字 <span class="poe-lbl">w/o</span> = without PoE output。数字无 <code>≤</code> 为设备自身功耗；<code>≤</code> / <code>Σ≤</code> 为端口或供电合计上限。</p>
+  <p class="lede">机柜在 Mechanical / Electrical Room，核心为 <strong>UDM-Pro-Max + USW-Pro-XG-24-PoE</strong>；Media Room 使用非 PoE <strong>USW-Flex-2.5G-8</strong>，经 active Media C6A 获得 10G + PoE+ input；车库 <strong>USW-Flex-2.5G-8-PoE</strong>（210W AC）经 Garage C6A 上联。七间各两根 Cat6A，每间只 patch 一根。五扇门各一套 Door Mini + Strike；前门配 G6 Pro Entry，其余配 UA-G3。每套 Mini 的第二个 PoE+ 口下挂一台对应位置的 Protect 摄像头；USL 仍直连 Garage Flex。Tesla 链只挂 Garage Flex。HA 主机嵌两根 ZBT-2（Zigbee + Thread）。</p>
+
+  <h3>选型结论</h3>
+  <ul>
+    <li><strong>核心 → UDM-Pro-Max + Pro XG</strong>：TELUS 5G WAN 进 UDM；Pro XG 出 PoE+++ 给 AP、门禁、HA Wallpanel、room drop 与车库上联。</li>
+    <li><strong>NAH → UDM</strong>：光纤已在 NAH 终结，不用外置光电转换盒。NAH 的 10G RJ45 进 UDM WAN SFP+，用 <strong>UACC-CM-RJ45-MG</strong>（1/2.5/5/10G）。直插 UDM 2.5G WAN 口会把 5G 套餐卡在 2.5G。</li>
+    <li><strong>UDM → Pro XG</strong>：机柜内 <strong>UACC-DAC-SFP10</strong>（SFP+ ↔ Pro XG 的 SFP28，10G）。短、稳、不必再占铜口。</li>
+    <li><strong>Media Room 交换机 → USW-Flex-2.5G-8</strong>：明确采用<strong>非 PoE 输出版本</strong>。active Media C6A 接其 10G RJ45 / SFP+ combo uplink，并由 XG 协商 PoE+ input（整机最大 14W）；八个 2.5G 下联口只传数据。备用 Media C6A 仍终结但不 patch。</li>
+    <li><strong>车库交换机 → USW-Flex-2.5G-8-PoE</strong>：上联为 Garage C6A home-run + Flex 端认证纯铜 Cat6 短跳；该短跳可保持 10GBASE-T 与 PoE+++，不降低端口能力。210W AC 保 PoE 裕量。SFP+ 与 10G RJ45 是 combo，数据只能一路。</li>
+    <li><strong>Garage room drop → C6A ×2</strong>：与全屋一致拉两根；一根 patch 到 XG 做 Flex 上联，另一根在配线架待命。永久链路仍按 C6A 预留 10G；仅 Flex 旁短跳改用 Cat6。车库出口只出一个插口。</li>
+    <li><strong>室内 Room Drop → 每间两根 C6A</strong>：七间一律两根 home-run 到配线架。Media / Den 墙面出<strong>双口 plate</strong>；Media 在用口下联非 PoE Flex，Den 在用口直连 Mac Studio，两个备用口都不 patch。其余五间（Master / BR1 / BR2 / Seating / Garage）出口只出一个插口，第二根作冗余备用、机柜端暂不 patch 到 XG。</li>
+    <li><strong>备电</strong>：双 PW3 承担全屋持续供电。机柜 UPS 不是必须；仅当实测切换会重启核心设备、且不能接受短中断时，再加一台只桥接数分钟的小型 UPS。</li>
+    <li><strong>NAS → Synology FS2500</strong>：跑 DSM；家庭<strong>多负载存储与管理层</strong>（LLM 模型库、安防录像、影音、文件、Web 等）。算力主机是 Mac Studio（经 Den Room Drop 上 XG）。<strong>2×10G LACP → Pro XG</strong>；12×2.5&quot; SSD all-flash；容量经济学非优先。选型依据见下方「NAS 选型」。</li>
+    <li><strong>Zigbee + Thread</strong>：两根 Connect ZBT-2 嵌在 HA Mini PC 内，无独立连线。Zigbee 占 USB-C，Thread 占 USB-3（需一枚 USB-A/C 数据转换头）。一根棒不能同时跑两种协议。</li>
+    <li><strong>前门 → Mini + G6 Pro Entry + Frontyard Turret + Strike</strong>：Entry 与 Frontyard/Front Eave/North East 摄像头分别占用 Mini 的两个 PoE+ 口。</li>
+    <li><strong>Mud / Dining / Basement / Garage 门</strong>：每套为 Mini + G3 + 一台 Protect 摄像头 + Strike；前三路上联 Pro XG，车库门上联 Flex。</li>
+    <li><strong>门禁与机位对应</strong>：Frontyard → Front Door；Backyard → Main/Mud/Back Door；Walkway/Balcony Eave → Main/Dining/Back Door；Courtyard → Basement/Back Door；Laneway → Garage Door。</li>
+    <li><strong>Viewport / USL</strong>：Viewport 直连 Pro XG；USL 直连 Flex，不经过 Door Mini。</li>
+    <li><strong>HA Mini PC 口向</strong>：ameriDroid 文档为 4×2.5G Intel I225/I226，<strong>其中 1 口 PoE++ IN</strong> 为上行（供电+数据）；其余 3 口是主机 LAN NIC，不是交换机下联，图中与上行口同放左侧，现空闲。</li>
+    <li><strong>线材</strong>：接到 <strong>XG</strong> 的入墙 / home-run（含 Garage C6A、主屋 Door Mini、AP、Wallpanel、NAS）一律 <strong>Cat6A 实心铜</strong>——10G 口与 PoE+++（90W）不能被线材卡住。不升级：没有需要超 Cat6A 的铜链路（25G 走 SFP/DAC）。<strong>Cat6</strong>：Garage 墙口 → Flex 短跳；各 Door Mini → 读头 / 对应摄像头；Flex → 车库 Mini、USL、U7-Lite、PW3 Leader；Tesla Leader↔Follower。机柜 UDM↔XG 用 SFP+ DAC；门锁 LOCK/DPS 用 12V；Tesla 控制用 CAN。ISP 进线是 TELUS XGS-PON，不进本图。ZBT USB 与 Flex AC 适配器是嵌套件，不画线。入墙不用 Cat5e / CCA。</li>
+  </ul>
+<h3>Pro XG 端口分配</h3>
+  <ul>
+    <li><strong>Uplink / WAN 侧</strong>：10G ← UDM LAN；NAS 用 <strong>2×10G LACP</strong>。</li>
+    <li><strong>2.5G PoE+++ · 8/8</strong>：HA Mini PC ×1 · Home Assistant PoE Wallpanel ×3 · 四套主屋 Door Mini。</li>
+    <li><strong>10G PoE+++ · 13/16</strong>：U7-Pro ×3 · Viewport ×1 · NAS 2×10G LACP · 七路在用 C6A（Media Flex ×1 + 其余 Room Drop ×5 + Garage Flex ×1）。设备按自身速率协商到 10G / 2.5G / 1G。</li>
+    <li><strong>Room drop</strong>：NAS 之后依次为五房 Room Drops 组、Media Room Drop 对及其下联非 PoE Flex、Garage C6A 与 Garage Flex。每间 Backup 线只终结到配线架，图中保留虚线备用 keystone，但不连接或占用 XG 端口。</li>
+    <li><strong>空闲 10G PoE+++ ×3</strong>：保留给以后启用备用 C6A 或其他铜缆设备。</li>
+    <li><strong>空闲 SFP28</strong>：留作日后机柜 Utility Switch 上联，不要先拿去填房间备用线。</li>
+  </ul>
+
+  <h3>Flex 端口分配</h3>
+  <ul>
+    <li><strong>Uplink</strong>：10G RJ45 ← Garage C6A home-run + Cat6 短跳（短跳保持 10G / PoE+++；AC 正常供电时仅承载数据）。SFP+ 空闲（combo，与 RJ45 不能同时传数据）。</li>
+    <li><strong>端口顺序</strong>：Garage Door Mini · PW3 Leader（PoE disabled）· USL-Gateway · U7-Lite · 空闲 ×4。</li>
+    <li><strong>Door Mini（车库）</strong>：PoE+ ×2 → UA-G3 + Laneway/Garage/South Turret；LOCK/DPS → Strike；REX 空闲。</li>
+  </ul>
+
+  <h3>摄像下挂 Door Mini 的边界</h3>
+  <ol>
+    <li><strong>受支持用途</strong>：Door Mini 的两个 PoE+ 输出分别服务 Access Reader 与一台 Protect 摄像头，按官方允许的下挂摄像场景使用。</li>
+    <li><strong>PoE 预算</strong>：Mini 出站 Σ≤45W；前门 Entry 18W + Turret 15W = 33W，其他四路 G3 5W + 摄像头 15W = 20W，且单口都不超过 30W。</li>
+    <li><strong>故障域</strong>：接受 Mini 重启时对应门口摄像头同时短暂离线，以换取释放 XG / Flex 端口。</li>
+    <li><strong>边界</strong>：每套 Mini 只挂一个 Reader + 一个 Camera；USL 仍直连 Flex，不挤占 Mini 端口或预算。</li>
+  </ol>
+
+  <h3>Tesla 链</h3>
+  <ul>
+    <li><strong>Leader / Follower 同口</strong>：每台 PW3 都是 2×ETH（交换）+ CAN。Leader：ETH→Flex、ETH→Follower、CAN→Gateway 3。Follower：ETH←Leader，第二路 ETH 与 CAN 空闲。</li>
+    <li><strong>Follower / Gateway 3</strong>：不另接家用交换机。</li>
+    <li><strong>禁止</strong>把 UniFi 设备串进两台 PW 之间。</li>
+  </ul>
+  <pre style="background:#fafafa;border:1px solid #ddd;padding:0.9rem 1rem;overflow-x:auto;line-height:1.35;font-size:0.9rem;">Flex ──► PW3 Leader ──Ethernet──► PW3 Follower
+              │
+              └── CAN / 12V ──► Gateway 3</pre>
+
+  <h3>施工预留</h3>
+  <ul>
+    <li>机柜在 Mechanical / Electrical Room：UDM · Pro XG · NAS · HA Mini PC。两根 ZBT-2 天线都出柜，彼此分开约 0.5–1 m，远离 USB 3 / SSD / AP。</li>
+    <li>三层 AP、三套 HA PoE Wallpanel、四套主屋 Door Mini、Viewport → home-run 回 Pro XG；主屋摄像头先回各自 Door Mini，不再单独 home-run 到 XG。</li>
+    <li>七间各拉 <strong>两根 Cat6A</strong>，全部终结、测试、贴标到配线架。每间只 patch 一根到 XG。Media / Den 墙面双口 plate；Media active 口接非 PoE Flex，Den active 口接 Mac Studio，另一个口均贴「未连接」。其余五间墙面单口，第二根留在墙盒 / 配线架。</li>
+    <li>Garage C6A（在用）→ 认证纯铜 Cat6 短跳 → Flex uplink；Flex 旁预留 210W AC。车库第二根 C6A 同样待命。</li>
+    <li>各门：Reader 与对应 Protect 摄像头分别用 Cat6 接到就近 Mini 的两个 PoE+ 口；REX、Strike（LOCK Wet 12V + DPS）按门锁线。</li>
+    <li>Walkway/Balcony Eave 摄像头回 Dining Mini；Laneway 摄像头回 Garage Mini；USL 单独用 Cat6 回 Flex。</li>
+    <li>Tesla：1× CAN（GW3↔Leader）· 1× Cat6 ETH（Leader↔Follower）· 1× Cat6 ETH（Leader↔Flex）。</li>
+    <li>线材：XG 侧入墙 <strong>Cat6A</strong>；Flex 下联、门边读头、Tesla 1G 短跳用 Cat6；机柜 UDM↔XG 用 DAC；门锁 12V / Tesla CAN 按图例。Thread 棒另备一枚 USB-A/C 数据转换头。</li>
+    <li>机械房就地短跳：从配线架拉到 HVAC 控制区、热水、集水坑附近各预留 1–2 个 keystone，供日后有线控制器或第二台 USL-Gateway；传感器本身走 SuperLink / Zigbee，不必每只都拉网线。</li>
+  </ul>
+  <div class="note">
+    参考：
+    <a href="https://techspecs.ui.com/unifi/switching/usw-pro-xg-24-poe" target="_blank" rel="noopener noreferrer">Pro XG 24 PoE Specs</a> ·
+    <a href="https://techspecs.ui.com/unifi/switching/usw-flex-2-5g-8" target="_blank" rel="noopener noreferrer">Flex 2.5G Specs</a> ·
+    <a href="https://techspecs.ui.com/unifi/switching/usw-flex-2-5g-8-poe" target="_blank" rel="noopener noreferrer">Flex 2.5G PoE Specs</a> ·
+    <a href="https://techspecs.ui.com/unifi/door-access/ua-hub-door-mini" target="_blank" rel="noopener noreferrer">Door Hub Mini Specs</a> ·
+    <a href="https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/InstallManual/Gateway/3/en-us/GUID-B7C9DCFE-6689-4486-9C26-FD30FE8A5EC4.html" target="_blank" rel="noopener noreferrer">Install Multiple Powerwall 3</a> ·
+    <a href="https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Datasheet/Gateway/3/en-us/Gateway-3-Datasheet.pdf" target="_blank" rel="noopener noreferrer">Gateway 3 Datasheet</a>
+  </div>
+
+  <h3>备电与机柜 UPS</h3>
+  <p>两台并联 Powerwall 3 解决的是<strong>全屋持续供电</strong>。机柜不再需要一台大容量 UPS 来撑整晚。UPS 只补两个缺口：Gateway 切换虽标 seamless，Tesla <strong>没有承诺 UPS 级零中断</strong>，部分交换机 / NAS / 光猫可能在切换瞬间重启；以及 Powerwall 维护、故障或电量耗尽时，给 NAS 一个正常关机窗口。</p>
+  <ul>
+    <li>先确认机柜回路在 whole-home backup 范围内，并做一次离网切换测试。</li>
+    <li>若 NAH、UDM、XG、NAS、HA 均不重启，<strong>可以不装 UPS</strong>。</li>
+    <li>若摄像、门禁、HA、上网不能接受哪怕数秒中断，再加一台只桥接数分钟的小型 UPS，负荷按 UniFi 遥测和墙端实耗选，不要按含 180W Wallpanel 占位的规划总数选。</li>
+    <li>UPS 须能接受 Powerwall 离网时的电压/频率窗口；装完再测一次切换。</li>
+  </ul>
+  <p>结论：双 PW3 前提下，UPS 从「强烈需要」降为「连续性保险」。参考 <a href="https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Datasheet/Gateway/3/en-us/Gateway-3-Datasheet.pdf" target="_blank" rel="noopener noreferrer">Gateway 3 Datasheet</a>。</p>
+
+  <h3>NAS 选型</h3>
+  <p>机柜 NAS 与 Mac Studio、UniFi 有线核心是一套分工，不是「一台全能机」，也<strong>不是只为本地 LLM 买的盘柜</strong>。LLM 模型库只是 NAS 存储层角色之一；同一台机器还要长期扛安防录像、影音库、家庭文件与 Web 等服务。先锁硬性门槛与<strong>多负载角色</strong>，再落到技术参数。本宅<strong>正式选型为 <a href="https://www.synology.com/en-us/products/FS2500" target="_blank" rel="noopener noreferrer">FS2500</a></strong>（曾对照 <a href="https://www.synology.com/en-global/products/RS1626xs+" target="_blank" rel="noopener noreferrer">RS1626xs+</a> 后改回）。文末有决策摘录与其它候选。</p>
+
+  <h4>硬性门槛</h4>
+  <ul>
+    <li><strong>Synology DSM</strong>：必须跑官方 DiskStation Manager。要快照、共享权限、备份套件、套件生态（Surveillance / Media / Web 等）与长期可维护的管理界面；不接受白牌 / TrueNAS 另起炉灶（除非整屋存储策略重写）。</li>
+    <li><strong>机柜式</strong>：19&quot; rackmount（1U / 2U 均可），进 Mechanical Room 机柜；导轨另配。不要塔式塞进机柜侧空。</li>
+  </ul>
+
+  <h4>本宅优先级（选型约束）</h4>
+  <ul>
+    <li><strong>容量经济学不是优先事项</strong>：可为路径简单、性能一致与 12 盘 all-flash 接受更高的 $/TB；不把「必须用 HDD 堆冷数据」当作门槛。</li>
+    <li><strong>算力不在 NAS</strong>：CPU / GPU intensive（含本地 LLM 推理）在 Mac Studio；NAS 的 CPU/内存只需撑 DSM 多套件，不追求 Xeon / 64 GB 级余量。</li>
+    <li><strong>市电连续靠 PW3</strong>：冗余 PSU、独立 OOB 管理口是加分项，不是选型主因（机柜可到现场；whole-home backup 已覆盖掉电主路径）。</li>
+  </ul>
+
+  <h4>角色分工（本宅）</h4>
+  <ul>
+    <li><strong>Mac Studio = Server 主机（算力）</strong>：放在 <strong>Main/Den</strong>。CPU / GPU intensive 应用放这里——本地 LLM 推理、训练/微调试验、重视频处理等。热工作集优先落在 Studio 本机高速 SSD。</li>
+    <li><strong>入网路径</strong>：Mac Studio 自带 <strong>10GbE</strong> → Den 墙面在用口 → <strong>Den Cat6A home-run</strong> → 配线架 patch → <strong>Pro XG</strong>。与 NAS 同交换域；大文件 / 模型搬运走有线 10G，不走 Wi‑Fi。Den 第二根 C6A 仍按双口 plate「未连接」待命。</li>
+    <li><strong>NAS = 家庭存储平台 + 轻量服务层（多负载）</strong>：不算力、不做主推理。本宅至少同时覆盖下列角色——<strong>LLM 只是其中一条</strong>：
+      <ul>
+        <li><strong>LLM 存储层</strong>：模型权重、LoRA / checkpoint、数据集与向量库；Studio 按需拉取。</li>
+        <li><strong>安防录像</strong>：Surveillance Station 录流，和/或 UniFi Protect 归档 / 二级保留。</li>
+        <li><strong>影音资源</strong>：片库；Media Server 或 SMB 直读。</li>
+        <li><strong>文件</strong>：文档、照片、项目目录、快照与备份。</li>
+        <li><strong>Web Server</strong>：Web Station 或轻量容器站点。</li>
+      </ul>
+    </li>
+    <li><strong>Mac Studio + NAS + UniFi 有线</strong>：够撑本地 LLM；NAS 同时稳住录像写入与影音/文件并发。</li>
+  </ul>
+
+  <h4>推荐技术参数（由多负载 + 本宅优先级反推）</h4>
+  <ul>
+    <li><strong>网络</strong>：至少 <strong>2×10GbE LACP → Pro XG</strong>（本图已画）。Studio 经 Den 单路 10G 即可。</li>
+    <li><strong>存储</strong>：<strong>All-flash 可接受</strong>（容量经济学非优先）。按数据类型用 DSM <strong>多 Storage Pool / Volume / 共享</strong>划分热冷（例如模型+Web 一池，录像+影音另一池）——单位是池/卷，不是文件钉在某块盘上。FS2500 <strong>不能插 HDD</strong>；冷池若用 SSD，性能不低于 HDD；寿命主要看录像持续写与盘的 TBW（选 NAS/企业级盘），不是「叫冷池」本身。</li>
+    <li><strong>容量</strong>：按录像天数 × 路数 + 影音 + 文件/备份 + LLM 多版本估；FS 开箱 12 闪存位一次到位，无官方盘柜。</li>
+    <li><strong>内存</strong>：ECC，建议升到 <strong>16–32 GB</strong>（FS 上限 32 GB，对本宅够用）。</li>
+    <li><strong>CPU</strong>：多核 x86 够 DSM 多套件即可；不要求独立 GPU。</li>
+    <li><strong>供电</strong>：机柜市电 + PW3 backup；单电可接受。</li>
+  </ul>
+
+  <h4>深度对比：为何改回 FS2500（对照 RS1626xs+）</h4>
+  <p>两台都过硬性门槛，都内建 <strong>2×10GbE</strong>。RS 在混闪/扩柜、双电、OOB、更高 CPU/内存上限上更强；在<strong>本宅已声明容量经济学非优先、算力在 Studio、PW3 管市电</strong>之后，这些优势多为余量。FS 开箱 12 闪存位、路径简单、全盘性能一致，更贴最终选择。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>维度</th>
+        <th><a href="https://www.synology.com/en-us/products/FS2500" target="_blank" rel="noopener noreferrer">FS2500</a></th>
+        <th><a href="https://www.synology.com/en-global/products/RS1626xs+" target="_blank" rel="noopener noreferrer">RS1626xs+</a></th>
+        <th>对本宅（定稿）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>定位</td>
+        <td>1U all-flash；12×2.5&quot; SSD only</td>
+        <td>4 盘 + 2×M.2；可 SSD/HDD；+RX1225RP→16</td>
+        <td><strong>选 FS</strong>：一次到位闪存位</td>
+      </tr>
+      <tr>
+        <td>容量经济学</td>
+        <td>$/TB 高</td>
+        <td>可用 HDD 容量层，更省</td>
+        <td><strong>非优先</strong> → 不倒向 RS</td>
+      </tr>
+      <tr>
+        <td>热/冷分池</td>
+        <td>多 SSD 池/卷即可；不能 HDD</td>
+        <td>可混闪或 HDD 冷池</td>
+        <td>FS 用 SSD 冷池可接受（性能≥HDD）</td>
+      </tr>
+      <tr>
+        <td>CPU / 内存</td>
+        <td>V1780B 4C/8T；8→32 GB</td>
+        <td>Xeon D-1726 6C/12T；16→64 GB</td>
+        <td>Studio 扛算力；FS 升内存后对本宅<strong>非瓶颈</strong>；RS 余量偏过剩</td>
+      </tr>
+      <tr>
+        <td>双电 / OOB</td>
+        <td>单电；无 OOB</td>
+        <td>冗余 PSU；独立 OOB</td>
+        <td>PW3 + 机柜可到达 → <strong>非选型主因</strong></td>
+      </tr>
+      <tr>
+        <td>网络</td>
+        <td>2×10G + 2×1G</td>
+        <td>2×10G + OOB</td>
+        <td>对现拓扑打平</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>决策摘录（改回 FS2500 前的问答整理）</h4>
+  <ul>
+    <li><strong>SSD 取代「适合 HDD」的冷数据</strong>：性能上不比 HDD 差（常更好或持平）；主要代价是钱。寿命：读多写少的冷数据很安全；安防 24/7 写才是 TBW 重点，选对盘即可，不必因此否定全闪。</li>
+    <li><strong>FS2500 能否按数据类型分盘</strong>：可以——用多个 Storage Pool / Volume / 共享按访问差异划分。不能插机械硬盘；冷池仍是 SSD。</li>
+    <li><strong>FS 的 CPU/内存是否瓶颈</strong>：在「推理在 Studio、NAS 多负载存储+轻服务、家用并发」下，升到 16–32 GB 后通常不是硬瓶颈；RS 的 Xeon/64 GB 对本宅偏保险而非刚需。</li>
+    <li><strong>单双电</strong>：双电防的是 PSU 模块坏，不防市电（市电靠 PW3）。对本宅是加分，不是必须。</li>
+    <li><strong>独立管理口（OOB）</strong>：业务网/DSM 异常时的带外通道；家用机柜可到现场、日常走 10G/DSM，价值有限，非选型主因。</li>
+    <li><strong>定稿</strong>：在容量经济学非优先的前提下，接受 all-flash 与 SSD 冷池，优先开箱 12 位、路径简单 → <strong>正式机型 FS2500</strong>。</li>
+  </ul>
+
+  <h4>其它候选（曾筛过）</h4>
+  <ul>
+    <li><strong>RS1626xs+</strong> — 合格对照机；混闪/扩柜/双电/OOB 更强。本宅因上述优先级<strong>不采用</strong>。</li>
+    <li><strong>FS3410</strong> — 更大 all-flash；溢价更高，非必要。</li>
+    <li><strong>RS2423(+RP) / RS2825RP+ / RS1221</strong> — 容量向；本机常仅 1×10G 或平台偏老，不如 FS 贴现图双 10G。</li>
+    <li><strong>SA / UC / FS6400 级</strong> — 排除。</li>
+  </ul>
+  <div class="note">
+    <strong>正式选型</strong>：<strong>Synology FS2500</strong>——2×10G LACP → Pro XG；12×2.5&quot; SSD；内存建议 16–32 GB；按池/卷隔离 LLM·Web 与录像·影音。Mac Studio 走 <strong>Den Cat6A → XG</strong>。<strong>容量经济学非优先</strong>；RS1626xs+ 仅作对照。
+  </div>
+  <h3>固定终端：有线还是 Wi‑Fi</h3>
+  <p>不建议把常见固定终端默认全部丢给 AP。原则：<strong>移动、低流量、没有网口 → Wi‑Fi</strong>；<strong>固定、有网口、延迟或稳定性重要 → Ethernet</strong>。</p>
+  <ul>
+    <li><strong>优先有线</strong>：<strong>Mac Studio（Den Room Drop）</strong>、台式机 / 办公 Dock、游戏机、主电视位的 Apple TV / Shield 等播放器、AV Receiver、大量读 NAS 的设备。</li>
+    <li><strong>可以 Wi‑Fi</strong>：手机、平板、笔记本、普通打印机、次要电视、大多数智能家电。</li>
+  </ul>
+  <p>不是因为这些终端需要 10G，而是固定设备没有必要长期占用无线 airtime。有线把电视墙和游戏机移出 Wi‑Fi 后，手机和 IoT 更稳。</p>
+
+  <h3>Room Drop 与终端扩展路线</h3>
+  <p>七个房间（Media / Den / Master / BR1 / BR2 / Seating / Garage）一律 <strong>两根 Cat6A 实心铜 home-run</strong> 到机柜配线架，全部终结、认证、贴标。拓扑和 XG 只画 / 只 patch <strong>每间正在用的那一根</strong>。备用线占配线架，不占 XG 口。</p>
+  <ul>
+    <li><strong>Media</strong>：在用口接 <strong>USW-Flex-2.5G-8（非 PoE 输出版）</strong>。10G RJ45 uplink 同时接受 XG 的 PoE+ 供电；八个 2.5G 口用于本室有线终端但不供电。第二根 C6A 保持未 patch。</li>
+    <li><strong>Den</strong>：在用口的主终端是 <strong>Mac Studio</strong>（机身 10GbE → 墙面 → C6A → Pro XG），与机柜 NAS 同交换域，承担本地 LLM 的有线数据面。双口 plate 的第二口仍贴「未连接」，对应未 patch 的备用 C6A。</li>
+    <li><strong>Media</strong>：同样双口 plate；为未来真实扩展预留，不是 Studio 位。</li>
+    <li><strong>其余五间</strong>：第二根是冗余备用。墙面<strong>只出一个插口</strong>；第二根留在墙盒并在配线架贴备标，不做出第二口以免误插。</li>
+  </ul>
+  <p>终端入网按这条路线长，不跳级、不提前把交换机装进每个房间：</p>
+  <ol>
+    <li><strong>AP + 1 × Cat6A</strong> — 现状。无线覆盖 + 一个有线点。</li>
+    <li><strong>AP + 1 × Cat6A × Switch</strong> — 该房间需要多台有线终端时，在用那根上联一台房间交换机。</li>
+    <li><strong>AP + 1 × Cat6A + 1 × Cat6A × Switch</strong>（仅 Media / Den）— 启用双口 plate 上「未连接」的那口：一根继续直连单台设备，另一根上联交换机；或一根备用、一根上联。</li>
+    <li><strong>AP + 2 × Cat6A × Switch</strong>（仅 Media / Den）— 两根都接到同一台房间交换机。必须明确做 <strong>LACP 或 STP</strong>，禁止随手双接成环。</li>
+  </ol>
+  <p>极端情况：其他某间也要更多有线口，启用该间冗余 Cat6A（墙面补第二口或改双口 plate），再按 Media / Den 的第 3–4 步走。一根 10G C6A 上联已够大多数家庭同时流量；加第二根是为了独立链路、故障备用或以后做聚合，不是因为带宽不够。</p>
+  <div class="note">Media Room Flex 可由 10G RJ45 的 PoE+ input 供电，也可改用随附 5V/3A USB-C；它不提供下游 PoE。其他房间若增加交换机，仍需确认本室供电、散热和放置位置。唯一上联或交换机故障时该房间有线全断——这正是备用 C6A 存在的理由。未配置 LACP/STP 时，两根线不要同时插进同一台交换机。</div>
+
+  <h3>Mechanical / Electrical Room</h3>
+  <p>机柜就在本室，不是再拉一条「房间 Room Drop」。这里同时是网络核心和机电核心：<strong>HVAC（Furnace + AC + ERV）</strong>、热水、集水坑泵，以及计划中的 <strong>USL-*</strong> 监测。网络需求按「就地短跳 + 无线传感」设计，不要再按普通卧室去堆墙面 plate。</p>
+  <h4>本室已有的网络角色</h4>
+  <ul>
+    <li><strong>机柜</strong>：NAH / UDM / XG / NAS / HA Mini PC。所有全屋 home-run 在这里终结。</li>
+    <li><strong>环境</strong>：炉体散热、冷凝、粉尘、集水坑溢水。机柜抬高、远离炉排气与水区；线缆从上方或侧面进柜，不要沿地面过坑。</li>
+    <li><strong>备电</strong>：确认本室回路在 PW3 whole-home backup 内，且 XG / UDM 不在会先甩的次要负荷上。</li>
+  </ul>
+  <h4>机电设备各自要不要网</h4>
+  <ul>
+    <li><strong>Furnace / AC / 恒温器</strong>：多数家用炉体本身不吃 Ethernet。智能恒温器常见 Wi‑Fi 或 Zigbee/Thread。若日后换带 Ethernet / BACnet 的控制器，从配线架拉一根短 C6A 到炉侧控制盒即可，不必再绕全屋。</li>
+    <li><strong>ERV</strong>：部分机型有 24V 控制或厂商网关；有 RJ45 的同样就地短跳。不要把 ERV 网关塞进金属风柜深处。</li>
+    <li><strong>热水</strong>：热泵热水器或循环泵若带网口，短跳到设备旁；否则用厂商 Wi‑Fi / HA 集成，不必为它单独占 XG 口。</li>
+    <li><strong>Sump pump</strong>：泵本体几乎从无网口。要的是<strong>溢水 / 漏水告警</strong>和备用泵状态。优先把漏水传感放在坑沿和热水器底盘。</li>
+  </ul>
+  <h4>USL-* 在本室怎么布</h4>
+  <p>现有 <strong>USL-Gateway</strong> 在车库、上联 Flex。它是 SuperLink / BLE 网关，不是传感器。<a href="https://store.ui.com/us/en/products/usl-environmental" target="_blank" rel="noopener noreferrer">USL-Environmental</a> 是电池供电，检测漏水、温湿度、环境光，经 SuperLink（北美约 915 MHz）回 Gateway，<strong>传感器不需要 Ethernet</strong>。</p>
+  <ul>
+    <li>本室计划的 USL 监测器：把 <strong>USL-Environmental</strong> 放在集水坑、热水器、冷热水汇管附近即可，走现有车库 Gateway。</li>
+    <li>地下室混凝土、金属风管、炉体可能衰减 915 MHz。若 Protect 里传感器不稳，再在本室加<strong>第二台 USL-Gateway</strong>（100M PoE，约 3.4W），从 XG 或日后 Utility Switch 就地短跳，不要经 Door Hub。</li>
+    <li>Gateway 天线避开大金属面；传感器贴地/贴管，Gateway 挂半高墙。</li>
+  </ul>
+  <h4>建议预留的就地点位（施工时做，拓扑暂不画）</h4>
+  <ul>
+    <li>配线架 → HVAC 控制区：1–2 × Cat6A（恒温器网关 / 日后炉控）。</li>
+    <li>配线架 → 热水区：1 × Cat6A。</li>
+    <li>配线架 → 集水坑附近半高墙：1 × Cat6A（备用第二 USL-Gateway 或有线漏水继电器）。</li>
+    <li>这些口终结在配线架，<strong>默认不 patch 到 XG</strong>，避免再占满核心口。</li>
+  </ul>
+  <p>本室不需要再按「AP + Room Drop」那条房间扩展路线走——覆盖靠全屋 AP，有线靠机柜就地短跳。Zigbee / Thread 棒在柜内，2.4 GHz 会被金属柜和炉体挡住，所以两根 ZBT-2 天线必须出柜；漏水类优先 USL SuperLink，不要指望机柜里的 Zigbee 可靠打到坑底。</p>
+
+  <h3>XG 铜口余量与后续扩展</h3>
+  <p>现状：8 个 2.5G 口已分配给 HA、Wallpanel 与四套主屋 Door Mini；16 个 10G 口中使用 13 个，剩余 <strong>3 个</strong>。七根备用 C6A 只在配线架，不插 XG。摄像头下挂 Mini 后无需立刻增加 Utility Switch。</p>
+  <ul>
+    <li><strong>上联</strong>：优先用 XG 空闲的那路 <strong>SFP28 → 10G/25G DAC</strong> 进 Utility Switch，不要再占铜口。</li>
+    <li><strong>适合迁走</strong>：1G 摄像、Viewport、本室就地短跳、打印机 / 电视 / 播放器、普通房间交换机上联。</li>
+    <li><strong>继续留在 XG</strong>：NAS 双 10G、三台 U7-Pro、HA 主机、PoE++ Wallpanel、Viewport、四套主屋 Door Mini 及七根在用 C6A。</li>
+    <li><strong>Door Mini</strong> 日后可以迁，但 Utility Switch 必须真正支持 802.3bt、单口功率和总 PoE budget；迁移时须把其 Reader + Camera 的完整下游负载一起核算。</li>
+    <li>房间备用 C6A 启用时，先占用配线架上空着的 patch，再考虑 Utility Switch；不要一有备用线就插满 XG。</li>
+  </ul>
+
+  <h3>MQTT、Zigbee、Thread</h3>
+  <p>三者不是同一层的三种「无线」。落实到本宅：<strong>两根 ZBT-2 分别固定 Zigbee 与 Thread</strong>；MQTT 只是软件，不增加射频硬件。</p>
+  <ul>
+    <li><strong>MQTT</strong>：跑在 Ethernet / Wi‑Fi / IP 上的消息总线，不是无线制式。设备把状态发到 Broker（常用 Mosquitto），HA 订阅。Tasmota / ESPHome、部分墙面面板走这条。Mini PC 上装 Mosquitto 即可，无新硬件。</li>
+    <li><strong>Zigbee</strong>：独立的 2.4 GHz mesh，不进你家普通 IP LAN。需要一个 Coordinator + 插电路由节点 + 电池末端。第一根 ZBT-2 专用 Zigbee。可用内置 <strong>ZHA</strong>（直进 HA，不用 MQTT），或日后改 <strong>Zigbee2MQTT</strong>（Zigbee → MQTT → HA）。</li>
+    <li><strong>Thread</strong>：同样是 2.4 GHz / IEEE 802.15.4 mesh，但承载 IPv6。Thread 只负责传输。常见路径：<code>Matter → Thread → Border Router → 家庭 IPv6 → HA Matter Server</code>。第二根 ZBT-2 专用 Thread，做 HA 自己的 Border Router。</li>
+  </ul>
+  <p>因此：Zigbee 与 Thread 硬件相近但网络互不兼容；MQTT 与两者无绑定，只有 Zigbee2MQTT 才会同时用到 Zigbee 和 MQTT；Matter-over-Thread 用 Matter + Thread，不用 MQTT；Matter-over-Wi‑Fi / Ethernet 不需要 Thread 棒。</p>
+  <p>官方明确：<strong>一根 ZBT-2 不能稳定同时跑 Zigbee + Thread</strong>（不要用 MultiPAN）。参考 <a href="https://www.home-assistant.io/connect/zbt-2/" target="_blank" rel="noopener noreferrer">Connect ZBT-2</a> · <a href="https://www.home-assistant.io/integrations/thread/" target="_blank" rel="noopener noreferrer">HA Thread</a> · <a href="https://www.home-assistant.io/integrations/matter" target="_blank" rel="noopener noreferrer">HA Matter</a>。</p>
+  <h4>硬件怎么接</h4>
+  <ul>
+    <li>两根 ZBT-2 作为嵌套部件画在 Mini PC 内，不拉拓扑线。</li>
+    <li>Zigbee 棒 → Mini PC <strong>USB-C</strong>（占用）。</li>
+    <li>Thread 棒 → Mini PC <strong>USB-3</strong>（占用），中间一枚合格的 <strong>USB-A → USB-C 数据转换头</strong>（要能传数据，不要只充电的线）。转换头只写本页，不进 Devices / 拓扑。</li>
+    <li>两根天线都用延长线出金属柜，间距约 0.5–1 m。</li>
+  </ul>
+  <p>若还要覆盖其它常见协议，按需再加，不必现在买：Z‑Wave（北美锁/开关）加北美频段 800/LR 棒；蓝牙用房间里的 ESPHome Bluetooth Proxy，不要把 BLE 棒丢在金属柜里；Lutron 等私有协议仍要自家 Bridge。无法用一只通用棒吃下所有厂商。</p>
+
+  <h2 class="ha-guide-heading">Home Assistant Setup Guide</h2>
+  <p class="lede">面向零基础的搭建说明：按本页设备清单，从主机到墙面平板、Zigbee、备份与日常维护。建议从上到下按顺序做；标有「可选」的步骤可延后。</p>
+
+  <h3>1. 这套系统在做什么</h3>
+  <p>Home Assistant（简称 HA）是跑在你家本地的智能家居「大脑」：设备连进来、自动化写在里面、墙面平板只当显示屏。云账号不是必须的；远程访问可之后用 Nabu Casa 或自己的 VPN。</p>
+  <p>按本表，你的架构是：</p>
+  <ul>
+    <li><strong>机柜主机</strong>：ameriDroid PoE Mini PC 跑 Home Assistant OS（系统 + 全部集成/自动化）。</li>
+    <li><strong>无线传感器总线</strong>：两根 Connect ZBT-2——一根专做 <strong>Zigbee</strong>，一根专做 <strong>Thread</strong>。Zigbee 插 Mini PC USB-C；Thread 经 USB-A/C 转换头插 USB-3。两根天线都出柜。</li>
+    <li><strong>墙面 Dashboard ×3</strong>（Basement / Main / Upper）：<strong>Home Assistant PoE Wallpanel</strong> 占位（1G PoE++，功耗按 60W 预留）。具体机型见下方「HA Panel 选型」。</li>
+    <li><strong>网络底座</strong>：UniFi 交换机（如 USW-Pro-XG-24-PoE）提供 PoE+/++；Protect 摄像头与 Access 门锁可先独立用 UniFi 应用，再在 HA 里做联动。</li>
+  </ul>
+
+  <h3>2. 开箱前要弄清的概念</h3>
+  <h4>2.1 集成 vs Add-on vs 自动化</h4>
+  <ul>
+    <li><strong>Integration（集成）</strong>：让 HA「认识」某类设备/服务（如 Zigbee、Samsung TV、UniFi）。</li>
+    <li><strong>Add-on</strong>：装在 HA OS 旁边的小服务（如文件编辑器、Mosquitto MQTT、Zigbee2MQTT）。初学者可先少装。</li>
+    <li><strong>Automation / Script / Scene</strong>：自动化规则、可复用动作、一键场景。</li>
+    <li><strong>Dashboard（Lovelace）</strong>：手机/平板上的界面；墙面平板通常全屏打开某个 Dashboard。</li>
+  </ul>
+  <h4>2.2 Zigbee / Thread / Matter / Wi‑Fi（怎么选）</h4>
+  <ul>
+    <li><strong>Zigbee</strong>：传感器与开关生态最大；ZBT-2 专做协调器后，设备经 mesh 互中继，不占家用 Wi‑Fi。</li>
+    <li><strong>Thread + Matter</strong>：新一代本地协议；很多 Matter 电池设备走 Thread。ZBT-2 <strong>不能同时</strong>跑 Zigbee 和 Thread，官方也不推荐「多协议」模式。</li>
+    <li><strong>Wi‑Fi 智能设备</strong>：可直接用厂商集成或 Matter-over-Wi‑Fi，但大量设备会挤占无线；优先把「常在线小设备」放 Zigbee。</li>
+    <li><strong>本宅决定</strong>：两根 ZBT-2 从一开始就分开——Zigbee 用 ZHA，Thread 做 Matter Border Router。不要把任一根改成 MultiPAN。</li>
+  </ul>
+  <h4>2.3 ZHA vs Zigbee2MQTT</h4>
+  <ul>
+    <li><strong>ZHA</strong>（内置）：设置少，跟 ZBT-2 官方向导最合拍，零基础优先。</li>
+    <li><strong>Zigbee2MQTT</strong>：设备支持面更广、调试强，但要 MQTT + 额外配置。等你熟悉后再迁不迟。</li>
+  </ul>
+
+  <h3>3. 网络与供电准备（装 HA 之前）</h3>
+  <ol class="checklist">
+    <li>交换机侧给 Mini PC 分配 <strong>PoE+ 或 PoE++</strong> 端口（预算按表内 30W 预留）。</li>
+    <li>三块墙面 Wallpanel 各自占一口 <strong>2.5G PoE+++ XG 端口</strong>（设备侧 1G PoE++ 上行；每路按 PoE++ 上限 60W 预留）。</li>
+    <li>建议给 HA 主机做 <strong>DHCP 保留 / 静态 IP</strong>，并记下来（之后平板书签、备份恢复都要用）。</li>
+    <li>可选：单独 IoT / Camera VLAN。初学者可先同一 LAN，先跑通再拆网段；若拆 VLAN，要提前规划防火墙放行 HA ↔ 设备。</li>
+    <li>墙面点位：每层预留一根到 Wallpanel 的网线（设备侧 PoE++）。</li>
+  </ol>
+  <div class="note">
+    <strong>功耗粗算（仅 HA 相关）：</strong> Mini PC 按 30W 预留（含两根 ZBT-2，各约 2.5W）+ 三套 Wallpanel 按 3×60W。实际选型后常远低于满载，但仍要从交换机总 PoE 预算里扣掉摄像头、AP、Access 等。
+  </div>
+
+  <h3>4. 主机硬件安装（机柜）</h3>
+  <h4>4.1 ameriDroid PoE Mini PC</h4>
+  <ol>
+    <li>装好 SSD（若未预装）、接上显示器 + 键盘仅用于首次烧录/排错（日常可无头运行）。</li>
+    <li>网线接到交换机 PoE 口；确认口灯与 PoE 供电正常（也可先用随附 DC 供电完成装机，再改 PoE）。</li>
+    <li>Zigbee 用的 ZBT-2：自带 USB‑C 线插 Mini PC 的 <strong>USB-C</strong>。</li>
+    <li>Thread 用的 ZBT-2：经 <strong>USB-A/C 数据转换头</strong> 插 Mini PC 的 <strong>USB-3</strong>。不要用只能充电的线。</li>
+    <li>两根天线都用延长线出柜或放到机柜顶开阔处（金属柜会严重衰减 2.4 GHz），彼此分开约 0.5–1 m，远离 USB 3、SSD 和 AP。</li>
+  </ol>
+  <h4>4.2 安装 Home Assistant OS</h4>
+  <ol>
+    <li>电脑打开官方安装说明：<a href="https://www.home-assistant.io/installation/" target="_blank" rel="noopener noreferrer">home-assistant.io/installation</a>，选择 <strong>Generic x86-64</strong>（Mini PC 属此类）。</li>
+    <li>用 <a href="https://www.balena.io/etcher/" target="_blank" rel="noopener noreferrer">balenaEtcher</a>（或厂商说明的工具）把 HA OS 镜像写入目标盘。<strong>会清空该盘</strong>，确认盘符无误。</li>
+    <li>从该盘启动 Mini PC。首次启动可能需 5–20 分钟（扩容、拉更新）。</li>
+    <li>同一局域网的手机/电脑浏览器访问 <code>http://homeassistant.local:8123</code>；若 mDNS 失败，改用 <code>http://&lt;主机IP&gt;:8123</code>。</li>
+  </ol>
+  <h4>4.3 首次引导（Onboarding）</h4>
+  <ol>
+    <li>创建管理员账号（密码用密码管理器保存）。</li>
+    <li>设定家名称、位置、时区、单位（温湿度自动化会用到位置与时区）。</li>
+    <li>可跳过「正在检测的设备」，稍后手动加。</li>
+    <li>强烈建议尽早在 <strong>Settings → System → Backups</strong> 做一次完整备份，并下载到电脑/网盘。</li>
+  </ol>
+  <div class="note">
+    <strong>可选账号：</strong><a href="https://www.nabucasa.com/" target="_blank" rel="noopener noreferrer">Home Assistant Cloud (Nabu Casa)</a> 提供官方远程访问与语音等，付费但省事。也可用 Tailscale/WireGuard 等自建远程，难度更高。
+  </div>
+
+  <h3>5. Connect ZBT-2 ×2（Zigbee + Thread）</h3>
+  <ol>
+    <li>两根棒都上电后，到 <strong>Settings → Devices &amp; services → Add integration</strong>。先完成 <strong>Zigbee（ZHA）</strong>，再把第二根向导走成 <strong>Thread</strong>。</li>
+    <li>每根棒<strong>只选一种协议</strong>，不要 MultiPAN。文档：<a href="https://www.home-assistant.io/connect/zbt-2/" target="_blank" rel="noopener noreferrer">Connect ZBT-2</a>。</li>
+    <li>Zigbee 推荐内置 <strong>ZHA</strong>；记下/备份网络密钥出现在备份里即可，不必手抄。</li>
+    <li>Thread 棒随后作为 HA 的 Border Router，给 Matter-over-Thread 设备用。</li>
+    <li>Zigbee 入网顺序：先插电的<strong>路由器型设备</strong>（智能插座、有电的灯具）形成骨架，再加电池传感器。入网时靠近协调器，成功后再移到安装位。</li>
+    <li>2.4 GHz 会与 Wi‑Fi、微波炉互相干扰；两根天线都远离 AP，并互相分开。</li>
+  </ol>
+  <p><strong>兼容性要点：</strong></p>
+  <ul>
+    <li>标称 Zigbee 3.0 的设备成功率最高；部分 Tuya 私有设备可能需改固件或改用 Zigbee2MQTT。</li>
+    <li>买之前可在 <a href="https://zigbee.blakadder.com/" target="_blank" rel="noopener noreferrer">Zigbee Device Compatibility Repository</a> 或 HA 社区搜型号。</li>
+    <li>同一房屋里避免同时跑两套互不相通的 Zigbee 协调器（例如 HA + 某网关各搞一套）除非你清楚要隔离。</li>
+    <li>Philips Hue、IKEA 等也可「直连」ZHA，或继续用官方桥再集成进 HA——初学直连更简单，大型 Hue 灯网可保留桥。</li>
+  </ul>
+
+  <h3>6. 墙面 Wallpanel</h3>
+  <p>三套点位相同（Basement / Main / Upper）。机型未定，见下方「HA Panel 选型」。施工先按 <strong>1G PoE++</strong> 上行、每路 <strong>60W</strong> 预留。</p>
+
+  <h3>HA Panel 选型</h3>
+  <p>三套点位共用同一套门槛。机型未定；先锁硬性要求，之后按此筛产品。不满足下列任一条即淘汰。</p>
+  <h4>软件与系统</h4>
+  <ul>
+    <li><strong>Android-based OS</strong>：基于 Android 即可，不要求完整 Play 生态，也不要求能装、能跑其他 App。本机只做 HA 面板；系统锁死在这一用途上反而更好。</li>
+    <li><strong>Home Assistant Companion</strong>：须明确支持把 Companion 设为 Android Home App，全屏常驻 Dashboard。</li>
+    <li><strong>Fully Kiosk</strong>：须支持 Fully Kiosk（或同等 lock-task / 全屏 kiosk），可关状态栏、禁退出、开机自启。</li>
+  </ul>
+  <h4>供电与网络</h4>
+  <ul>
+    <li><strong>原生 IEEE PoE</strong>：设备自带 RJ45，走标准 IEEE 802.3af / at / bt。不允许 proprietary / passive PoE，不允许 USB-C / 分线器 / 注入器等任何转接头。</li>
+    <li><strong>无电池</strong>：固定墙装、由 PoE 直供；不要平板电池长期插电循环。</li>
+  </ul>
+  <h4>安装与传感</h4>
+  <ul>
+    <li><strong>Proximity / presence</strong>：须有接近或存在传感，人近亮屏、人走熄屏或降亮。</li>
+    <li><strong>原生墙装</strong>：嵌入或厂商原厂墙装，按 24/7 常亮设计，不是消费平板外加支架/锁架。</li>
+    <li><strong>加拿大可买、北美可装</strong>：须有加拿大购买渠道；安装尺寸与电气须符合北美标准（盒规、认证、接线），不要欧规改件。</li>
+  </ul>
+  <h4>规格态度</h4>
+  <ul>
+    <li>屏幕尺寸、分辨率、内存以满足家用 Dashboard 为底线，<strong>不追求性能过剩</strong>。</li>
+    <li>优先看品质、触控与显示体验、易维护（可换、可更新、可远程管）、以及长期耐用。</li>
+  </ul>
+  <div class="note">
+    施工与交换机侧仍按占位预留：设备上行 <strong>1G PoE++</strong>，每路功耗按 PoE++ 上限 <strong>60W</strong>；XG 侧物理端口仍保留 2.5G PoE+++ 能力。定型后回填实际功耗与端口。
+  </div>
+
+  <h4>参考：Cameron Gray 视频要点</h4>
+  <p>素材：<a href="https://www.youtube.com/watch?v=lBU4yU9eD2U" target="_blank" rel="noopener noreferrer">The Ultimate In-Wall Tablets for Home Assistant Dashboards!</a>。下面只作实践摘录，不是本页门槛，也不等于选型结论。视频机型为 AliExpress 白牌 + 英规单联盒。</p>
+  <p><strong>他怎么选 / 比</strong></p>
+  <ul>
+    <li>早期 Tuya / Smart Life 或底层 Linux、要解锁才像 Android 的面板难用；较新的墙装机是接近原版 Android，可直接装应用。</li>
+    <li>搜「PoE Android」比搜「in-wall tablet」更容易找到墙装 PoE 机；同类外观常无统一型号，按外观和规格比价。</li>
+    <li>横屏 / 竖屏按墙面：靠近门套、开关正上方空间窄用竖屏，宽墙用横屏。</li>
+    <li>同外观常有两套板：八核 + Android 14（约 4 GB / 64 GB）比四核 + Android 13（约 4 GB / 32 GB）跟手。4 GB 跑 Dashboard 够用；CPU 代际比再堆内存更明显。</li>
+    <li>旧板个例：一熄屏就 kernel panic 重启，只能 24/7 亮着，不适合卧室。退货期内必须测熄屏 / 亮屏 / 重页面。</li>
+    <li>厂商自带 kiosk、MQTT、板载 Zigbee、继电器 / GPIO / IR / RS485、LED 灯环当附加能力；USB-C 多半只能 ADB / 刷机，不能供电。他用 PoE，不用随附 12 V 适配器。</li>
+  </ul>
+  <p><strong>安装</strong></p>
+  <ol>
+    <li>墙内预留网线（他用 Cat6），机柜端先做好、交换机口配好，再上墙。</li>
+    <li>英规深盒约 47 mm，螺丝须凹进墙面，浅表装盒会顶出来。塑胶干衬盒两侧凸耳可能卡住托板，有时要削耳、开槽；金属暗盒更干净。</li>
+    <li>高度对齐恒温器 / 门禁键盘一类「伸手就点」的位置，不要太低（LCD 俯视角度差）。</li>
+    <li>托板固定后：插 RJ45 → 挂上滑到位。磁吸只防轻碰，承重靠挂钩。</li>
+    <li>先 PoE 桌测完整软件，再开孔。</li>
+  </ol>
+  <p><strong>设置</strong></p>
+  <ul>
+    <li>跳过 Google 账号；墙面无锁屏，登私人 Google 等于把邮箱交给路过的人。</li>
+    <li>不给墙面设开机 PIN。他建议独立 VLAN、禁出站，只放行 HA（及 MQTT）。</li>
+    <li>HA 用独立 panel 用户，不是管理员。</li>
+    <li>Companion「Allow as Home app」能开机进 HA，但通知栏仍能进系统，侧栏也藏不干净。</li>
+    <li>他实际用 <strong>Fully Kiosk Browser Plus</strong>（约 €7.90 终身，可迁机）：Start URL 指向该房间 Dashboard；开机自启；禁止导航键 / 通知栏；连点五下 + PIN 退出；URL 白名单；空闲后回到首页（已在首页则不刷新）；导出配置再导入到第二台。</li>
+    <li>需要后台 MQTT 小工具时，用 Fully Universal Launcher 开机拉起再置后。</li>
+    <li>HA 侧用 HACS <strong>kiosk-mode</strong>，按 panel 用户藏 header / sidebar。</li>
+    <li>一层一块房间 Dashboard：大按钮、场景；手机版尺寸不要原样上墙。场景可先关 Adaptive Lighting，另留 Auto 再开自动。</li>
+    <li>亮屏：Fully 可用摄像头移动侦测；坐着可能侦不到，也可用房间 PIR。熄屏后点屏幕可醒。演示 30 s 熄屏太短，他倾向房间有人就保持亮、久无活动再关；也可用屏保代替全黑。</li>
+  </ul>
+  <p><strong>维护</strong></p>
+  <ul>
+    <li>白牌固件基本无安全更新；当哑终端，用 Fully 远程改 URL、亮度、开关屏、重启。</li>
+    <li>换机：转移 Plus 许可 + 导入配置。</li>
+    <li>熄屏即崩 / 点太快就重启：退货或只放客厅并常亮；他后来买新的会选较新的 Android 14 板。</li>
+    <li>板载温湿度、LED、继电器可通过厂商 MQTT 或社区 HAD Panel 进 HA，不是必选项。</li>
+  </ul>
+
+  <h3>7. 与 UniFi Protect / Access 的关系</h3>
+  <ul>
+    <li><strong>Protect</strong>（G6 相机、Viewport）：录像与实时预览以 UniFi Protect 为准；HA 可通过社区/官方相关集成做通知、开关灯联动等，但不要指望用 HA 取代 NVR。</li>
+    <li><strong>Access</strong>（UA-G3、USL-Gateway）：门禁逻辑以 UniFi Access 为准；HA 适合做「开门→亮灯/撤防」类联动。</li>
+    <li>集成前确保 HA 能访问 UniFi 控制台地址；本地 API/账号权限按该集成文档最小授权。</li>
+  </ul>
+
+  <h3>8. 建议的启用顺序（避免一次做完崩溃）</h3>
+  <ol>
+    <li>HA OS 装好 + 备份。</li>
+    <li>手机 Companion 能稳定打开。</li>
+    <li>ZBT-2 + 2～3 个 Zigbee 插座/灯，写第一条「开关 → 灯」自动化。</li>
+    <li>装第一块墙面平板并全屏 Dashboard。</li>
+    <li>复制到另外两层；再批量加传感器。</li>
+    <li>Thread 棒就位后，再加 Matter-over-Thread 设备；复杂日程、能耗、语音放最后。</li>
+  </ol>
+
+  <h3>9. 推荐的基础设置与 Add-on（可循序渐进）</h3>
+  <ul>
+    <li><strong>Backups</strong>：每日自动备份；重要变更前手动备份。</li>
+    <li><strong>Settings → System → Hardware / Updates</strong>：系统与 Supervisor 更新，先读变更说明再升。</li>
+    <li>Add-on 可选：<strong>Studio Code Server</strong> 或 File editor（改 <code>configuration.yaml</code>）、<strong>Samba share</strong>（从电脑拷备份）、<strong>Advanced SSH</strong>（进阶）。</li>
+    <li>若大量 Wi‑Fi/Tuya MQTT 设备：再装 <strong>Mosquitto</strong>；上 Zigbee2MQTT 时才强依赖 MQTT。</li>
+    <li>仪表盘：先用官方 Sections 视图；不必一上来就装一大堆 HACS 前端。</li>
+  </ul>
+  <div class="note">
+    <strong>关于 HACS：</strong>第三方集成市场，很强大，也是新手踩坑来源。等官方集成不够用再装；每次只加一个，并做好备份。
+  </div>
+
+  <h3>10. 自动化入门（最小闭环）</h3>
+  <ol>
+    <li><strong>Settings → Automations</strong> → Create：触发（如 Zigbee 人体传感器 occupied）→ 动作（开灯）。</li>
+    <li>用 <strong>Areas（区域）</strong> 把设备归到 Basement / Main / Upper，方便按房间写灯控。</li>
+    <li>避免「环形自动化」（A 开 B、B 又开 A）。</li>
+    <li>通知类先用手机 Companion 推送，跑通后再上墙面。</li>
+  </ol>
+
+  <h3>11. 安全与家庭使用习惯</h3>
+  <ul>
+    <li>管理员账号仅你使用；家人/墙面用普通用户 + 受限 Dashboard。</li>
+    <li>不要把 <code>:8123</code> 直接裸暴露到公网端口转发。</li>
+    <li>SSD 与备份同样重要：盘坏可重装，无备份则自动化全丢。</li>
+    <li>停电：全屋由双 PW3 备电。仅当实测切换会重启核心设备时，再给「网关 + PoE 交换机 + HA + NAS」加小型桥接 UPS；墙面平板可接受短时掉电。</li>
+  </ul>
+
+  <h3>12. 常见问题速查</h3>
+  <ul>
+    <li><strong>打不开 homeassistant.local</strong>：改用 IP；检查电脑与 HA 是否同网段/VLAN。</li>
+    <li><strong>PoE 不上电</strong>：确认口协商到 PoE++（Wallpanel / 主机）；线序与线材质量（建议实心铜 Cat6 以上）。</li>
+    <li><strong>Zigbee 经常掉线</strong>：协调器移出金属柜、加路由节点、避开 Wi‑Fi 拥挤信道。</li>
+    <li><strong>更新后异常</strong>：用备份还原；看 Settings → System → Logs。</li>
+    <li><strong>Matter-over-Thread 设备入不了网</strong>：确认第二根棒已固定为 Thread、天线已出柜；不要把 Zigbee 那根改来改去。</li>
+  </ul>
+
+  <h3>13. 学习路径与官方文档</h3>
+  <ol>
+    <li><a href="https://www.home-assistant.io/getting-started/" target="_blank" rel="noopener noreferrer">Getting Started</a></li>
+    <li><a href="https://www.home-assistant.io/docs/" target="_blank" rel="noopener noreferrer">Documentation 首页</a>（Concepts、Dashboards、Automations）</li>
+    <li><a href="https://www.home-assistant.io/integrations/" target="_blank" rel="noopener noreferrer">Integrations 目录</a>（买设备前先搜能不能本地接入）</li>
+    <li><a href="https://companion.home-assistant.io/" target="_blank" rel="noopener noreferrer">Companion App</a></li>
+    <li>社区：<a href="https://community.home-assistant.io/" target="_blank" rel="noopener noreferrer">community.home-assistant.io</a>；中文也可搜「Home Assistant 中国」等论坛/群，但配置以英文官方文档为准更不易过时。</li>
+  </ol>
+
+  <h3>14. 与本表对应的物料清单（HA 部分）</h3>
+  <ul>
+    <li>1× ameriDroid PoE Mini PC（机柜）</li>
+    <li>2× Home Assistant Connect ZBT-2（Zigbee + Thread 各一）</li>
+    <li>1× USB-A/C 数据转换头（Thread 棒 → Mini PC USB-3；不要只充电的线）</li>
+    <li>3× Home Assistant PoE Wallpanel（选型待定）</li>
+    <li>交换机侧：至少 1 个 PoE++（主机）+ 3 个 PoE++（Wallpanel，每路按 60W 预留；当前接在 XG 的 PoE+++ 口）；线材与墙面点位按楼层施工图预留</li>
+  </ul>
+  <p class="lede">本指南会随你的实际安装进度继续补洞（VLAN、具体自动化模板、Protect 集成步骤等）。先把第 4–6 节跑通，就是成功的第一步。</p>
+  </article>
+  </section>

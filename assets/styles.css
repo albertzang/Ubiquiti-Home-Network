@@ -1,0 +1,1968 @@
+html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.55;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .spa-bar {
+      flex: 0 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1.25rem;
+      padding: 0.55rem 1.1rem;
+      border-bottom: 1px solid #ddd;
+      background: #fff;
+    }
+
+    .spa-bar h1 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .spa-nav {
+      display: flex;
+      flex-wrap: wrap;
+      flex: 1 1 auto;
+      gap: 0.25rem;
+    }
+
+    .spa-nav button {
+      font: inherit;
+      font-size: 0.88rem;
+      padding: 0.32rem 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 0.28rem;
+      background: #f6f6f6;
+      color: #222;
+      cursor: pointer;
+    }
+
+    .spa-nav button.is-on {
+      background: #1a6bb5;
+      border-color: #1a6bb5;
+      color: #fff;
+    }
+
+    .spa-blueprint-actions {
+      display: inline-flex;
+      align-items: stretch;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .spa-blueprint-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.32rem 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 0.28rem 0 0 0.28rem;
+      background: #eef2f5;
+      color: #394957;
+      font-size: 0.88rem;
+      font-weight: 650;
+    }
+
+    .spa-blueprint-actions button {
+      margin-left: -1px;
+      border-radius: 0;
+    }
+
+    .spa-blueprint-actions button:last-child {
+      border-radius: 0 0.28rem 0.28rem 0;
+    }
+
+    .spa-nav .spa-preview-button {
+      border-color: #8fb4d3;
+      background: #fff;
+      color: #155b98;
+    }
+
+    .spa-nav .spa-preview-button:hover {
+      border-color: #6f9fc7;
+      background: #edf5fb;
+      color: #104c7d;
+    }
+
+    .spa-nav .spa-preview-button.is-on {
+      border-color: #5c91bc;
+      background: #d7e9f6;
+      color: #0f4f80;
+    }
+
+    .spa-nav .spa-export-button {
+      border-color: #1a6bb5;
+      background: #1a6bb5;
+      color: #fff;
+    }
+
+    .spa-nav .spa-export-button:hover,
+    .spa-nav .spa-export-button:focus-visible {
+      background: #155b98;
+      border-color: #155b98;
+    }
+
+    .spa-nav .spa-export-button:active {
+      background: #0f4779;
+      border-color: #0f4779;
+    }
+
+    .spa-blueprint-actions button:focus-visible {
+      position: relative;
+      z-index: 1;
+      outline: 2px solid #79a9d0;
+      outline-offset: 1px;
+    }
+
+    .spa-tab {
+      display: none;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .spa-tab.is-on {
+      display: flex;
+    }
+
+    .spa-split.is-on {
+      display: grid;
+      grid-template-columns: 20rem minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .spa-legend {
+      overflow: auto;
+      padding: 0.7rem 0.85rem 1.2rem;
+      border-right: 1px solid #ddd;
+      background: #fafafa;
+    }
+
+    .spa-legend h2 {
+      margin-top: 0;
+      font-size: 1rem;
+    }
+
+    .spa-legend h3 {
+      margin: 1rem 0 0.35rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #444;
+    }
+
+    .spa-main {
+      overflow: auto;
+      min-width: 0;
+      padding: 0.7rem 0.9rem 1.2rem;
+    }
+
+    .spa-chart {
+      padding: 0.5rem 0.75rem 1rem;
+    }
+
+    .spa-topo {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 0.55rem 0.7rem 0.7rem;
+    }
+
+    .spa-doc.is-on {
+      display: block;
+      overflow: auto;
+    }
+
+    .spa-article {
+      max-width: 48rem;
+      padding: 1.1rem 1.4rem 2.4rem;
+    }
+
+    .spa-article h2:first-child {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      margin-top: 2.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    h3 {
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    h4 {
+      margin-top: 1.25rem;
+      margin-bottom: 0.4rem;
+    }
+
+    p,
+    ul,
+    ol {
+      margin: 0.5rem 0 0.75rem;
+    }
+
+    ul,
+    ol {
+      padding-left: 1.4rem;
+    }
+
+    li {
+      margin: 0.25rem 0;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: max-content;
+      max-width: none;
+    }
+
+    table.legend-table {
+      width: auto;
+      max-width: 36rem;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    table.legend-table th,
+    table.legend-table td {
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f5f5f5;
+    }
+
+    a {
+      color: #0066cc;
+    }
+
+    code {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.92em;
+      background: #f3f3f3;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+
+    .lede {
+      color: #444;
+      margin-bottom: 1.25rem;
+    }
+
+    .note {
+      border-left: 3px solid #888;
+      padding: 0.6rem 0.9rem;
+      margin: 1rem 0;
+      background: #fafafa;
+    }
+
+    .checklist li {
+      margin: 0.4rem 0;
+    }
+
+    /* Port icons */
+    .udc-device {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .udc-device img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .udc-ports {
+      display: inline-flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.45rem 0.5rem;
+    }
+
+    /* Count beside the port so every port group has the same height. */
+    .udc-port-wrap {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.18rem;
+    }
+
+    .udc-count {
+      font-size: 0.65rem;
+      line-height: 1;
+      color: #555;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+
+    .udc-port {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      width: 1.65rem;
+      height: 1.65rem;
+      border-radius: 0.35rem;
+      --port-c: #666;
+      color: #141414;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      vertical-align: middle;
+      gap: 0.05rem;
+    }
+
+    .udc-port.gbe1 { --port-c: #38cc65; background: #38cc65; }
+    .udc-port.gbe2p5 { --port-c: #99c5ff; background: #99c5ff; }
+    .udc-port.gbe10 { --port-c: #3a9fcb; background: #3a9fcb; }
+    .udc-port.gbe25 { --port-c: #c696ee; background: #c696ee; }
+    .udc-port.gbe100 { --port-c: #0049a8; background: #0049a8; color: #fff; }
+    .udc-port.fe { --port-c: #f0b429; background: #f0b429; } /* 100M */
+    .udc-port.other {
+      --port-c: #c4785a;
+      background: #c4785a; /* 非以太网：光纤 / USB / CAN / REX / DPS / LOCK */
+      color: #fff;
+      width: auto;
+      min-width: 1.65rem;
+      padding: 0 0.2rem;
+      font-size: 0.42rem;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    /* Kit rows: equal flex bands + full-bleed dashed lines across Device/Port/PoE */
+    td:has(> .udc-device-stack),
+    td:has(> .kit-stack) {
+      padding: 0;
+      height: 1px;
+      vertical-align: top;
+    }
+
+    .udc-device-stack,
+    .kit-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      box-sizing: border-box;
+    }
+
+    .udc-device-stack > .udc-device,
+    .udc-device-stack > a:first-child {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex: 1 1 0;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.75rem;
+      box-sizing: border-box;
+    }
+
+    .udc-accessory {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex: 1 1 0;
+      min-height: 2.75rem;
+      margin: 0;
+      padding: 0.5rem 0.75rem 0.5rem 2.1rem;
+      border-top: none;
+      background-image: repeating-linear-gradient(
+        to right,
+        #ccc 0,
+        #ccc 0.45rem,
+        transparent 0.45rem,
+        transparent 0.7rem
+      );
+      background-size: 100% 1px;
+      background-repeat: repeat-x;
+      background-position: left top;
+      font-size: inherit;
+      color: inherit;
+      box-sizing: border-box;
+    }
+
+    .udc-accessory img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .kit-seg {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      flex: 1 1 0;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.75rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .kit-seg.acc {
+      margin: 0;
+      border-top: none;
+      background-image: repeating-linear-gradient(
+        to right,
+        #ccc 0,
+        #ccc 0.45rem,
+        transparent 0.45rem,
+        transparent 0.7rem
+      );
+      background-size: 100% 1px;
+      background-repeat: repeat-x;
+      background-position: left top;
+    }
+
+    .poe-cell {
+      vertical-align: top;
+      min-width: 5.5rem;
+    }
+
+    td.port-cell {
+      min-width: 4.5rem;
+      vertical-align: middle !important;
+    }
+
+    /* Remove the inline-flex baseline gap so standalone port groups center exactly. */
+    td.port-cell > .udc-ports {
+      display: flex;
+      width: max-content;
+    }
+
+    #tab-devices .spa-chart > table > tbody > tr > td:last-child,
+    .blueprint-devices-table > tbody > tr > td:last-child {
+      vertical-align: middle;
+    }
+
+    .poe-val {
+      display: block;
+      line-height: 1.25;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .poe-sub {
+      display: block;
+      margin-top: 0.12rem;
+      font-size: 0.7rem;
+      color: #666;
+      white-space: normal;
+      max-width: 9rem;
+      line-height: 1.25;
+    }
+
+    .poe-lbl {
+      font-size: 0.65em;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #888;
+    }
+
+    th.port-group {
+      text-align: center;
+    }
+
+    th.port-sub {
+      font-weight: 600;
+      font-size: 0.85rem;
+      background: #f0f0f0;
+    }
+
+    .udc-port.hollow {
+      background: transparent;
+      box-shadow: inset 0 0 0 1.5px #666;
+      color: #333;
+    }
+
+    .udc-port.idle,
+    .udc-port.topo-port-idle {
+      background: transparent;
+      box-shadow: inset 0 0 0 1.5px var(--port-c);
+      color: var(--port-c);
+    }
+
+    .udc-port.idle.dash,
+    .udc-port.topo-port-idle.dash {
+      box-shadow: none;
+      border: 1.5px dashed var(--port-c);
+    }
+
+    .udc-port.sfp {
+      --port-c: #2b2b2b;
+      flex-direction: row;
+      flex-shrink: 0;
+      width: auto;
+      min-width: 2.4rem;
+      height: 1.65rem;
+      padding: 0 0.28rem;
+      background: #2b2b2b;
+      color: #fafafa;
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      overflow: visible;
+      white-space: nowrap;
+    }
+
+    .udc-port.sfp.idle,
+    .udc-port.sfp.topo-port-idle {
+      background: transparent;
+      color: var(--port-c);
+      box-shadow: inset 0 0 0 1.5px var(--port-c);
+    }
+
+    .udc-port.sfp .udc-poe {
+      width: 0.7rem;
+      height: 0.7rem;
+    }
+
+    .udc-sfp-txt {
+      display: block;
+      font-size: 0.52rem;
+      line-height: 1;
+      font-weight: 700;
+      color: inherit;
+    }
+
+    .udc-poe {
+      width: 0.95rem;
+      height: 0.95rem;
+    }
+
+    .udc-port.gbe100 .udc-poe,
+    .udc-port.sfp .udc-poe,
+    .udc-port.other .udc-poe {
+      color: #fafafa;
+    }
+
+    .udc-port.idle .udc-poe,
+    .udc-port.topo-port-idle .udc-poe {
+      color: #141414;
+    }
+
+    .udc-port.idle .udc-sfp-txt,
+    .udc-port.topo-port-idle .udc-sfp-txt {
+      color: var(--port-c);
+    }
+
+    .cable-swatch {
+      display: inline-block;
+      width: 1.65rem;
+      height: 0.28rem;
+      border-radius: 0.14rem;
+      vertical-align: middle;
+    }
+
+    .cable-cat6a { background: #e65100; }
+    .cable-cat6 { background: #1565c0; }
+    .cable-dac { background: #111111; }
+    .cable-can { background: #00897b; }
+    .cable-lock12 { background: #8e24aa; }
+
+    .legend-table {
+      margin: 0.75rem 0 1.5rem;
+    }
+
+    .legend-table th,
+    .legend-table td {
+      vertical-align: middle;
+    }
+
+    .legend-table td:first-child {
+      width: 3.5rem;
+      text-align: center;
+    }
+
+    .legend-table .legend-section th {
+      padding-block: 0.4rem;
+      background: #e9edf1;
+      color: #263746;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-align: left;
+      text-transform: uppercase;
+    }
+
+    .legend-table .legend-columns th {
+      padding-block: 0.35rem;
+      color: #526170;
+      font-size: 0.67rem;
+    }
+
+    .vlan-swatch {
+      display: inline-block;
+      box-sizing: border-box;
+      width: 1.65rem;
+      height: 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      border-radius: 0.22rem;
+      background: var(--vlan-color);
+      vertical-align: middle;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .vlan-management { --vlan-color: #005ea8; }
+    .vlan-trusted { --vlan-color: #2e7d32; }
+    .vlan-servers { --vlan-color: #6a3d9a; }
+    .vlan-iot { --vlan-color: #a15c00; }
+    .vlan-security { --vlan-color: #b3263e; }
+    .vlan-guest { --vlan-color: #007c7a; }
+
+    .vlan-role small {
+      display: block;
+      margin-top: 0.08rem;
+      color: #68737f;
+      font-size: 0.62rem;
+      line-height: 1.15;
+    }
+
+    .topo-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin: 0;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .topo-canvas {
+      position: relative;
+      width: 100%;
+      min-height: 0;
+      height: 100%;
+      overflow: auto;
+      background: #fafafa;
+      border: 1px solid #ddd;
+    }
+
+    .topo-stage {
+      position: relative;
+    }
+
+    .topo-edges {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .topo-link {
+      fill: none;
+      stroke: #e65100;
+      stroke-width: 1.45;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      marker-end: url(#topo-arrow-cat6a);
+      pointer-events: none;
+    }
+
+    .topo-link.cable-cat6a { stroke: #e65100; marker-end: url(#topo-arrow-cat6a); }
+    .topo-link.cable-cat6 { stroke: #1565c0; marker-end: url(#topo-arrow-cat6); }
+    .topo-link.cable-dac { stroke: #111111; marker-end: url(#topo-arrow-dac); }
+    .topo-link.cable-can { stroke: #00897b; marker-end: url(#topo-arrow-can); }
+    .topo-link.cable-lock12 { stroke: #8e24aa; marker-end: url(#topo-arrow-lock12); }
+
+    .topo-link-label {
+      fill: #30363d;
+      stroke: #fff;
+      stroke-width: 3px;
+      paint-order: stroke fill;
+      font-size: 0.58rem;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    .topo-link-label-link,
+    .topo-link-label-link .topo-link-label {
+      color: #30363d;
+      cursor: pointer;
+      pointer-events: all;
+    }
+
+    .topo-link-label-link:hover .topo-link-label,
+    .topo-link-label-link:focus .topo-link-label {
+      fill: #30363d;
+      text-decoration: underline;
+      text-decoration-color: #30363d;
+    }
+
+    .topo-node {
+      position: absolute;
+      z-index: 1;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: max-content auto max-content;
+      justify-items: center;
+      align-items: center;
+      width: max-content;
+      padding: 0.42rem;
+      gap: 0.28rem 0.32rem;
+      border: 1px solid #bbb;
+      border-radius: 0.32rem;
+      background: #fff;
+      color: #1a1a1a;
+      font: inherit;
+      font-size: 0.7rem;
+      line-height: 1.2;
+      text-align: center;
+      cursor: default;
+    }
+
+    /* XG: compact header above an equal-height dual-sided fanout section. */
+    .topo-node.topo-xg {
+      z-index: auto;
+      grid-template-columns: max-content minmax(0, 1fr) max-content;
+      grid-template-rows: max-content max-content minmax(0, 1fr);
+      align-items: stretch;
+      align-content: stretch;
+      column-gap: 0;
+      row-gap: 0.28rem;
+    }
+
+    .topo-node.topo-xg > .topo-mid {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      align-self: start;
+      justify-self: stretch;
+      min-width: 11.5rem;
+      padding-inline: 0;
+    }
+
+    .topo-node.topo-xg > .topo-mid::after {
+      content: "";
+      display: block;
+      width: 68%;
+      margin-top: 0.3rem;
+      border-top: 1px solid #c7d0d8;
+    }
+
+    .topo-node.topo-xg > .topo-ports {
+      position: relative;
+      z-index: 3;
+    }
+
+    .topo-node.topo-xg > .topo-ports.up {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      position: relative;
+      flex-direction: row;
+      align-self: center;
+      width: 100%;
+      min-width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-node.topo-xg > .topo-ports.left {
+      grid-column: 1;
+      grid-row: 3;
+    }
+
+    .topo-node.topo-xg > .topo-ports.right {
+      grid-column: 3;
+      grid-row: 3;
+    }
+
+    .topo-node.topo-xg > .topo-ports.left,
+    .topo-node.topo-xg > .topo-ports.right {
+      position: relative;
+      align-self: stretch;
+      height: 100%;
+      justify-content: flex-start;
+    }
+
+    .topo-node.topo-xg > .topo-ports.left > .topo-slot,
+    .topo-node.topo-xg > .topo-ports.right > .topo-slot {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: auto;
+    }
+
+    .topo-node.topo-backup {
+      border-style: dashed;
+    }
+
+    .topo-counted-port {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.03rem;
+      line-height: 1;
+    }
+
+    .topo-port-count {
+      color: #526170;
+      font-size: 0.48rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .udc-port.loose {
+      background: transparent;
+      border: 1.5px dashed var(--port-c);
+      box-shadow: none;
+      color: var(--port-c);
+    }
+
+    .topo-bundle {
+      position: absolute;
+      z-index: 2;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: max-content max-content max-content;
+      width: max-content;
+      padding: 0.42rem;
+      border: 1.5px dashed #8b99a6;
+      border-radius: 0.42rem;
+      background: transparent;
+      color: #1a1a1a;
+      font: inherit;
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
+
+    /* Reserves GAP_X + port-wrap so inner devices keep the same XG gap as other nodes */
+    .topo-bundle-port-gutter {
+      width: calc(32px + 2.4rem);
+      pointer-events: none;
+    }
+
+    .topo-bundle-diagram {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.42rem;
+      padding-right: 0.42rem;
+    }
+
+    .topo-bundle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      width: max-content;
+    }
+
+    .topo-bundle-device {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: max-content auto max-content;
+      align-items: center;
+      justify-items: center;
+      width: max-content;
+      padding: 0.35rem;
+      gap: 0.22rem 0.28rem;
+      border: 1px solid #bbb;
+      border-radius: 0.32rem;
+      background: #fff;
+      text-align: center;
+    }
+
+    .topo-bundle-device.topo-backup {
+      border-style: dashed;
+    }
+
+    .topo-bundle-device .topo-mid {
+      max-width: 13rem;
+    }
+
+    .topo-bundle-device .topo-name {
+      white-space: nowrap;
+    }
+
+    .topo-bundle-device .topo-ports {
+      min-width: 1.65rem;
+    }
+
+    .topo-bundle-device.topo-bundle-device-tb {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      justify-items: center;
+    }
+
+    .topo-bundle-device.topo-bundle-device-tb > .topo-ports {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      width: max-content;
+      max-width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-bundle-device.topo-bundle-device-tb > .topo-ports.up {
+      width: 100%;
+    }
+
+    .topo-bundle-device.topo-bundle-device-tb > .topo-ports.down:empty {
+      display: none;
+    }
+
+    .topo-bundle-door-tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.25rem;
+      width: max-content;
+    }
+
+    .topo-bundle-door-children {
+      display: flex;
+      align-items: flex-start;
+      gap: 2rem;
+      width: max-content;
+    }
+
+    .topo-bundle-door-root {
+      width: 100%;
+    }
+
+    .topo-bundle-door-root > .topo-ports.down {
+      position: relative;
+      width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-bundle-door-root > .topo-ports.down > .topo-slot {
+      position: absolute;
+      top: 0;
+      flex-direction: row;
+      width: auto;
+    }
+
+    .topo-bundle-door-matrix {
+      grid-template-columns: max-content max-content;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .topo-bundle-door-matrix .topo-bundle-diagram {
+      gap: 0.42rem;
+      padding-right: 0;
+    }
+
+    .topo-door-matrix-row {
+      box-sizing: border-box;
+      display: block;
+      align-items: stretch;
+      width: max-content;
+      padding: 0;
+    }
+
+    .topo-door-matrix-row + .topo-door-matrix-row {
+      margin-top: 0.42rem;
+    }
+
+    .topo-door-matrix-branch {
+      display: grid;
+      grid-template-columns: max-content max-content;
+      align-items: stretch;
+      gap: 0.7rem;
+      width: max-content;
+    }
+
+    .topo-door-matrix-root {
+      align-self: stretch;
+    }
+
+    .topo-door-matrix-root > .topo-mid {
+      min-width: 11rem;
+    }
+
+    .topo-door-matrix-root > .topo-ports.down {
+      position: relative;
+      align-self: stretch;
+      justify-content: flex-start;
+    }
+
+    .topo-bundle-door-matrix .topo-bundle-device {
+      padding: 0.42rem;
+      gap: 0.28rem 0.32rem;
+    }
+
+    /* Logical mirror: reverse only layout columns, never text or glyphs. */
+    .topo-bundle.flow-left:not(.topo-bundle-door-matrix) > .topo-bundle-port-gutter {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .topo-bundle.flow-left:not(.topo-bundle-door-matrix) > .topo-bundle-diagram {
+      grid-column: 2;
+      grid-row: 1;
+      padding-right: 0;
+      padding-left: 0.42rem;
+    }
+
+    .topo-bundle.flow-left:not(.topo-bundle-door-matrix) > .topo-bundle-locations {
+      grid-column: 1;
+      grid-row: 1;
+      margin-left: 0;
+      border-left: 0;
+      border-right: 1px solid #8b99a6;
+    }
+
+    .topo-bundle-door-matrix.flow-left > .topo-bundle-port-gutter {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .topo-bundle-door-matrix.flow-left > .topo-bundle-diagram {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .topo-bundle.flow-left .topo-bundle-device > .topo-ports.up {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .topo-bundle.flow-left .topo-bundle-device > .topo-mid {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .topo-bundle.flow-left .topo-bundle-device > .topo-ports.down {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .topo-bundle-door-matrix.flow-left .topo-door-matrix-root {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .topo-bundle-door-matrix.flow-left .topo-door-matrix-endpoints {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .topo-door-matrix-endpoints {
+      display: grid;
+      grid-template-rows: repeat(4, minmax(1.35rem, auto));
+      align-items: center;
+      gap: 0.12rem;
+      width: max-content;
+    }
+
+    .topo-door-matrix-endpoint {
+      width: 100%;
+    }
+
+    .topo-door-matrix-reader { grid-row: 1; }
+    .topo-door-matrix-camera { grid-row: 2; }
+    .topo-door-matrix-strike { grid-row: 4; }
+
+    .topo-door-matrix-camera .topo-mid {
+      max-width: 14rem;
+    }
+
+    .topo-bundle-locations {
+      display: grid;
+      align-self: stretch;
+      margin-left: 0;
+      border-left: 1px solid #8b99a6;
+    }
+
+    .topo-bundle-location {
+      display: flex;
+      align-items: center;
+      padding: 0.34rem 0.5rem;
+      color: #596775;
+      font-size: 0.64rem;
+      white-space: nowrap;
+    }
+
+    .topo-bundle-location:not(:first-child) {
+      border-top: 1px solid #c1cad2;
+    }
+
+    .topo-mid {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      gap: 0.12rem;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .topo-mid * {
+      white-space: nowrap;
+    }
+
+    .topo-embeds {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.18rem;
+      width: max-content;
+    }
+
+    .topo-node.topo-tb {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      justify-items: center;
+      padding: 0.42rem;
+    }
+
+    .topo-node.topo-tb .topo-ports {
+      flex-direction: row;
+      justify-content: center;
+      align-self: center;
+      width: max-content;
+      max-width: 100%;
+      height: auto;
+      min-height: 1.65rem;
+    }
+
+    .topo-node.topo-tb .topo-ports.up {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .topo-node.topo-tb .topo-slot {
+      flex-direction: row;
+      width: auto;
+    }
+
+    .topo-node.topo-tb .topo-ports.down:empty {
+      display: none;
+    }
+
+    .topo-node.topo-core-vertical {
+      grid-template-columns: 1fr;
+      grid-template-rows: max-content auto max-content;
+      align-items: center;
+      justify-items: stretch;
+      min-width: 0;
+    }
+
+    .topo-node.topo-core-vertical > .topo-ports {
+      position: relative;
+      width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-node.topo-core-vertical > .topo-mid {
+      justify-self: center;
+    }
+
+    .topo-node.topo-core-vertical .topo-counted-port {
+      flex-direction: row;
+      gap: 0.16rem;
+    }
+
+    .topo-node.flow-left > .topo-ports.up {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .topo-node.flow-left > .topo-mid {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .topo-node.flow-left > .topo-ports.down {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .topo-node.topo-corner {
+      grid-template-columns: max-content auto max-content;
+      grid-template-rows: auto auto;
+    }
+
+    .topo-node.topo-corner .topo-ports.up {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .topo-node.topo-corner .topo-mid {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .topo-node.topo-corner .topo-ports.down {
+      grid-column: 3;
+      grid-row: 1;
+      min-width: 1.65rem;
+      min-height: 0;
+    }
+
+    .topo-node.topo-corner .topo-ports.down:empty {
+      min-width: 0;
+      width: 0;
+    }
+
+    .topo-node.topo-corner .topo-ports.bottom {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      flex-direction: row;
+      justify-content: center;
+      width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-node.topo-hang .topo-ports.bottom,
+    .topo-node.topo-hang.topo-tb .topo-ports.down {
+      position: relative;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 1.65rem;
+    }
+
+    .topo-node.topo-hang .topo-slot {
+      position: relative;
+      flex-direction: row;
+      width: auto;
+    }
+
+    .topo-node.is-fanout {
+      align-items: stretch;
+      align-content: stretch;
+      grid-template-rows: 1fr;
+    }
+
+    .topo-node.is-fanout .topo-ports.up {
+      justify-content: center;
+      align-self: center;
+    }
+
+    .topo-node.is-fanout[data-id="flex"] > .topo-ports.up {
+      position: relative;
+      justify-content: flex-start;
+      align-self: stretch;
+      width: 2.4rem;
+      min-width: 2.4rem;
+    }
+
+    .topo-node.is-fanout .topo-ports.down {
+      position: relative;
+      align-self: stretch;
+      height: 100%;
+      justify-content: flex-start;
+    }
+
+    .topo-node.is-fanout .topo-ports.down .topo-slot {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: auto;
+    }
+
+    .topo-node.is-fanout .topo-mid {
+      justify-content: center;
+    }
+
+    .topo-name {
+      display: block;
+      margin: 0 auto;
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 0.74rem;
+      color: #1a1a1a;
+      line-height: 1.25;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .topo-node[class*="vlan-"] .topo-name,
+    .topo-bundle-device[class*="vlan-"] .topo-name {
+      color: var(--vlan-color);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .topo-name:hover {
+      text-decoration: underline;
+    }
+
+    .topo-node small,
+    .topo-apex-legend small {
+      display: block;
+      color: #666;
+      font-size: 0.62rem;
+      font-weight: 400;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .topo-ports {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      gap: 0.1rem;
+      width: auto;
+      min-width: 1.65rem;
+      min-height: 1.65rem;
+      overflow: visible;
+    }
+
+    .topo-ports.down:empty {
+      min-width: 0;
+      width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .topo-slot {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.14rem;
+      align-items: center;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .topo-node.is-hang-fanout .topo-ports.down,
+    .topo-node.is-hang-fanout .topo-ports.bottom {
+      position: relative;
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .topo-node.is-hang-fanout .topo-slot {
+      position: absolute;
+      top: 0;
+      width: auto;
+    }
+
+    .topo-node:hover,
+    .topo-apex:hover {
+      border-color: #1a6bb5;
+    }
+
+    .topo-embed {
+      display: block;
+      margin-top: 0.06rem;
+      padding: 0.08rem 0.28rem;
+      border: 1px dashed #bbb;
+      border-radius: 0.22rem;
+      background: #f7f7f7;
+      line-height: 1.2;
+    }
+
+    .topo-embed-name {
+      font-size: 0.58rem;
+      font-weight: 600;
+      color: #444;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .topo-embed-name:hover,
+    .topo-embed-name:focus-visible {
+      text-decoration: underline;
+    }
+
+    .topo-poe {
+      width: 100%;
+      min-width: 7.4rem;
+      margin-top: 0.18rem;
+      text-align: left;
+    }
+
+    .topo-poe-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.45rem;
+      font-size: 0.58rem;
+      color: #666;
+      line-height: 1.2;
+      margin-bottom: 0.12rem;
+    }
+
+    .topo-poe-num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .topo-poe-track {
+      height: 0.28rem;
+      border-radius: 999px;
+      background: #e6e6e6;
+      overflow: hidden;
+    }
+
+    .topo-poe-fill {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: #18b86a;
+    }
+
+    .topo-poe.is-over .topo-poe-fill {
+      background: #e24b4a;
+    }
+
+    .topo-poe.is-over .topo-poe-num {
+      color: #c0392b;
+    }
+
+    .topo-device-power {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.45rem;
+      width: 100%;
+      min-width: 7.4rem;
+      margin-top: 0.16rem;
+      padding-top: 0.14rem;
+      border-top: 1px solid #e2e2e2;
+      color: #666;
+      font-size: 0.58rem;
+      line-height: 1.2;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .topo-device-power strong {
+      color: #333;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .topo-apex {
+      position: absolute;
+      z-index: 1;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: max-content;
+      padding: 0.42rem;
+      border: 1.5px solid #888;
+      border-radius: 0.45rem;
+      background: #f3f3f3;
+    }
+
+    .topo-apex-legend {
+      margin-top: 0.35rem;
+      padding: 0 0.15rem;
+      text-align: center;
+    }
+
+    .topo-apex-legend .topo-name {
+      font-size: 0.68rem;
+      max-width: none;
+      white-space: nowrap;
+    }
+
+    .topo-apex-body {
+      display: flex;
+      flex-direction: row;
+      gap: 1.15rem;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .topo-apex .topo-node {
+      position: relative;
+      left: auto !important;
+      top: auto !important;
+    }
+
+    .power-report {
+      max-width: 78rem;
+      margin: 0 auto;
+      padding: 1.1rem 1.4rem 2.4rem;
+    }
+
+    .power-report h2:first-child {
+      margin-top: 0;
+    }
+
+    .power-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin: 1rem 0 1.35rem;
+    }
+
+    .power-card {
+      min-width: 0;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid #d4d4d4;
+      border-radius: 0.45rem;
+      background: #fafafa;
+    }
+
+    .power-card-title {
+      margin: 0;
+      color: #555;
+      font-size: 0.75rem;
+      font-weight: 650;
+    }
+
+    .power-card-value {
+      margin: 0.14rem 0 0.55rem;
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .power-card-value small {
+      color: #666;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .power-meter {
+      height: 0.38rem;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5e5e5;
+    }
+
+    .power-meter > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: #18b86a;
+    }
+
+    .power-meter.is-tight > span {
+      background: #d98b16;
+    }
+
+    .power-card-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+      color: #666;
+      font-size: 0.68rem;
+    }
+
+    .power-callout {
+      margin: 1rem 0 1.4rem;
+      padding: 0.65rem 0.8rem;
+      border-left: 3px solid #d98b16;
+      background: #fff8e8;
+      color: #4a3a20;
+    }
+
+    .power-formula {
+      margin: 0.45rem 0 0.85rem;
+      color: #555;
+      font-size: 0.82rem;
+    }
+
+    .power-table-wrap {
+      max-width: 100%;
+      overflow: auto;
+      margin: 0.65rem 0 1rem;
+    }
+
+    table.power-table {
+      width: 100%;
+      min-width: 46rem;
+    }
+
+    table.power-table th,
+    table.power-table td {
+      white-space: normal;
+    }
+
+    table.power-table td.num,
+    table.power-table th.num {
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    table.power-table tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .power-footnote {
+      color: #666;
+      font-size: 0.78rem;
+    }
+
+    .print-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 0.8rem;
+      margin-bottom: 0.85rem;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d5d5d5;
+      border-radius: 0.4rem;
+      background: #fafafa;
+    }
+
+    .print-toolbar button {
+      border: 1px solid #1a6bb5;
+      border-radius: 0.28rem;
+      padding: 0.38rem 0.72rem;
+      background: #1a6bb5;
+      color: #fff;
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .print-toolbar small {
+      color: #666;
+      font-size: 0.72rem;
+    }
+
+    .blueprint-page-shell {
+      padding: 0.8rem;
+      overflow: auto;
+      background: #e9edf1;
+    }
+
+    .blueprint-preview {
+      width: 100%;
+      overflow: auto;
+    }
+
+    .blueprint-sheet {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      max-width: 112.5rem;
+      aspect-ratio: 176 / 117;
+      margin: 0 auto;
+      padding: 0.55rem;
+      border: 1px solid #17324d;
+      background: #fff;
+      color: #172635;
+    }
+
+    .blueprint-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.1rem 0.15rem 0.45rem;
+      border-bottom: 2px solid #17324d;
+    }
+
+    .blueprint-header h2 {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: clamp(0.85rem, 1.45vw, 1.45rem);
+      line-height: 1.1;
+      letter-spacing: 0.025em;
+    }
+
+    .blueprint-header p {
+      margin: 0;
+      color: #40566c;
+      font-size: clamp(0.46rem, 0.68vw, 0.72rem);
+      white-space: nowrap;
+    }
+
+    .blueprint-grid {
+      display: grid;
+      grid-template-columns: 37.5fr 54.5fr 8fr;
+      min-height: 0;
+      gap: 0.4rem;
+      padding: 0.4rem 0;
+    }
+
+    .blueprint-panel {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid #71869a;
+    }
+
+    .blueprint-panel h3 {
+      margin: 0;
+      padding: 0.25rem 0.35rem;
+      border-bottom: 1px solid #71869a;
+      background: #f0f4f7;
+      color: #17324d;
+      font-size: 0.72rem;
+      line-height: 1.1;
+      letter-spacing: 0.025em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .blueprint-viewport {
+      position: relative;
+      box-sizing: border-box;
+      min-width: 0;
+      min-height: 0;
+      padding: 0.45rem;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .blueprint-scale {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: max-content;
+      font-size: 0.7rem;
+      line-height: 1.2;
+      transform-origin: left top;
+    }
+
+    .blueprint-scale > table {
+      margin: 0;
+    }
+
+    .blueprint-title-block {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      border-top: 2px solid #17324d;
+      font-size: clamp(0.43rem, 0.58vw, 0.66rem);
+      line-height: 1.25;
+    }
+
+    .blueprint-title-block > div {
+      padding: 0.3rem 0.45rem;
+      border-left: 1px solid #71869a;
+    }
+
+    .blueprint-title-block > div:first-child {
+      border-left: 0;
+    }
+
+    .blueprint-title-block strong {
+      display: block;
+      color: #17324d;
+      font-size: 1.08em;
+    }
+
+    .blueprint-devices-table {
+      table-layout: auto;
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
+
+    .blueprint-devices-table th,
+    .blueprint-devices-table td {
+      padding: 0.3rem 0.42rem;
+    }
+
+    .blueprint-devices-table th:nth-child(2),
+    .blueprint-devices-table td:nth-child(2) {
+      max-width: 16rem;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .blueprint-devices-table th:last-child,
+    .blueprint-devices-table td:last-child {
+      max-width: 10rem;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .blueprint-legend {
+      box-sizing: border-box;
+      width: max-content;
+      padding: 0;
+      border: 0;
+      overflow: visible;
+      background: #fff;
+      font-size: 0.7rem;
+      line-height: 1.2;
+    }
+
+    .blueprint-legend .legend-table {
+      margin: 0;
+      width: max-content;
+    }
+
+    .blueprint-legend .legend-table th,
+    .blueprint-legend .legend-table td {
+      padding: 0.3rem 0.42rem;
+      white-space: nowrap;
+    }
+
+    .blueprint-legend .legend-section th,
+    .blueprint-legend .legend-columns th {
+      text-align: center;
+    }
+
+    body.blueprint-source-measure #tab-topology {
+      position: fixed !important;
+      left: -100000px !important;
+      top: 0 !important;
+      display: grid !important;
+      visibility: hidden !important;
+      width: 132rem !important;
+      height: 78rem !important;
+      pointer-events: none !important;
+    }
+
+    /*
+     * Apply the physical sheet size before window.print() switches media.
+     * This lets renderBlueprint() calculate the print scale instead of
+     * carrying the smaller on-screen preview scale into the PDF.
+     */
+    body.print-blueprint .blueprint-sheet {
+      width: 35.2in;
+      max-width: none;
+      height: 23.4in;
+    }
+
+    @media print {
+      html,
+      body {
+        height: auto;
+      }
+
+      body.print-blueprint,
+      body.print-design {
+        display: block;
+        min-height: 0;
+        background: #fff;
+      }
+
+      body.print-blueprint .spa-bar,
+      body.print-design .spa-bar,
+      body.print-blueprint .print-toolbar,
+      body.print-design .print-toolbar {
+        display: none !important;
+      }
+
+      body.print-blueprint .spa-tab,
+      body.print-design .spa-tab {
+        display: none !important;
+      }
+
+      body.print-blueprint #tab-blueprint {
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      body.print-blueprint .blueprint-page-shell,
+      body.print-blueprint .blueprint-preview {
+        overflow: visible;
+        padding: 0;
+        background: #fff;
+      }
+
+      body.print-blueprint .blueprint-sheet {
+        width: 35.2in;
+        max-width: none;
+        height: 23.4in;
+        margin: 0 auto;
+      }
+
+      body.print-design #tab-design {
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      body.print-design .spa-article {
+        max-width: none;
+        padding: 0;
+        font-size: 10pt;
+        line-height: 1.42;
+      }
+
+      body.print-design .spa-article h2,
+      body.print-design .spa-article h3,
+      body.print-design .spa-article h4 {
+        break-after: avoid-page;
+      }
+
+      body.print-design .spa-article .ha-guide-heading {
+        break-before: page;
+      }
+
+      body.print-design .spa-article table,
+      body.print-design .spa-article pre,
+      body.print-design .spa-article .note {
+        break-inside: avoid-page;
+      }
+
+      body.print-design a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+    }
+
+    @media (max-width: 1100px) {
+      .spa-split.is-on {
+        grid-template-columns: 1fr;
+      }
+
+      .spa-legend {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        max-height: 14rem;
+      }
+
+      .topo-wrap {
+        height: auto;
+      }
+
+      .power-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .blueprint-title-block {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+      }
+
+      .blueprint-title-block > div:nth-child(2) {
+        display: none;
+      }
+    }
+
+.spa-loading { padding: 1.25rem; color: #596775; }
