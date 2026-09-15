@@ -2463,7 +2463,7 @@
        * topology fit scale be measured on screen before print media applies.
        *
        * Design width is set by the widest schedule: the device list needs
-       * 12.6in at 9pt with no cell wrapping, so 18in is the smallest
+       * 13.2in at 10pt with no cell wrapping, so 18in is the smallest
        * architectural sheet dimension that clears it.
        */
       var papers = {
@@ -2474,9 +2474,9 @@
           label: "ARCH C · 24 × 18 IN · LANDSCAPE"
         },
         design: {
-          page: "18in 12in",
-          margin: "0.55in 0.7in",
-          label: "ARCH B · 18 × 12 IN · LANDSCAPE"
+          page: "18in 24in",
+          margin: "0.6in 0.7in",
+          label: "ARCH C · 18 × 24 IN · PORTRAIT"
         }
       };
 

@@ -2113,7 +2113,7 @@ html, body {
         break-inside: avoid;
       }
 
-      /* Design: Arch B landscape at 9pt. */
+      /* Design: Arch C portrait at 10pt. */
       body.print-design #export-root {
         display: none;
       }
@@ -2130,7 +2130,7 @@ html, body {
       body.print-design .spa-article {
         max-width: none;
         padding: 0;
-        font-size: 9pt;
+        font-size: 10pt;
         line-height: 1.45;
       }
 
@@ -2147,9 +2147,9 @@ html, body {
         break-after: avoid-page;
       }
 
-      /* Screen-sized micro labels fall under 6pt on paper. */
+      /* Screen-sized micro labels stay under 7pt even at a 10pt body. */
       body.print-design .spa-article .poe-lbl {
-        font-size: 7pt;
+        font-size: 7.5pt;
       }
 
       body.print-design .spa-article .ha-guide-heading {
@@ -2163,10 +2163,10 @@ html, body {
 
       /*
        * Tables print at their natural width rather than being squeezed into the
-       * text column: the device schedule needs 12.6in at 9pt, which the 16.6in
-       * Arch B content box clears without wrapping a single cell. Tables taller
+       * text column: the device schedule needs 13.2in at 10pt, which the 16.6in
+       * Arch C content box clears without wrapping a single cell. Tables taller
        * than one page break and repeat their header - keeping break-inside:
-       * avoid on a 20in table is what clipped it before.
+       * avoid on a 22in table is what clipped it before.
        */
       body.print-design .spa-article .design-devices-wrap {
         overflow: visible !important;
