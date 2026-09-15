@@ -1,8 +1,7 @@
-<section id="tab-design" class="spa-tab spa-doc" data-tab="design">
+<section id="tab-design" class="spa-tab spa-doc spa-design" data-tab="design">
+  <div class="design-shell">
+  <nav class="design-toc" aria-label="On this page"></nav>
   <article class="spa-article">
-  <div class="print-toolbar">
-    <button type="button" id="export-design-pdf">Export Design PDF · US Letter</button>
-  </div>
   <h2>设计说明</h2>
   <p class="lede">Whole-home hardware inventory: ISP / WAN, gateway, switching, room drops, Wi‑Fi, Protect &amp; Access, Home Assistant, NAS, and IoT. <strong>PoE Uplink</strong> 中继设备：大字 <span class="poe-lbl">w/</span> = with PoE output；小字 <span class="poe-lbl">w/o</span> = without PoE output。数字无 <code>≤</code> 为设备自身功耗；<code>≤</code> / <code>Σ≤</code> 为端口或供电合计上限。</p>
   <p class="lede">机柜在 Mechanical / Electrical Room，核心为 <strong>UDM-Pro-Max + USW-Pro-XG-24-PoE</strong>；Media Room 使用非 PoE <strong>USW-Flex-2.5G-8</strong>，经 active Media C6A 获得 10G + PoE+ input；车库 <strong>USW-Flex-2.5G-8-PoE</strong>（210W AC）经 Garage C6A 上联。七间各两根 Cat6A，每间只 patch 一根。五扇门各一套 Door Mini + Strike；前门配 G6 Pro Entry，其余配 UA-G3。每套 Mini 的第二个 PoE+ 口下挂一台对应位置的 Protect 摄像头；USL 仍直连 Garage Flex。Tesla 链只挂 Garage Flex。HA 主机嵌两根 ZBT-2（Zigbee + Thread）。</p>
@@ -337,6 +336,211 @@
   </ul>
   <p>若还要覆盖其它常见协议，按需再加，不必现在买：Z‑Wave（北美锁/开关）加北美频段 800/LR 棒；蓝牙用房间里的 ESPHome Bluetooth Proxy，不要把 BLE 棒丢在金属柜里；Lutron 等私有协议仍要自家 Bridge。无法用一只通用棒吃下所有厂商。</p>
 
+  <h2>PoE Power Breakdown</h2>
+  <p class="lede">按当前设备规格与预留值核算，不是 UniFi 实时遥测。<strong>PoE Power Used</strong> 只计算对应 PSE 的输出负载；PoE 中继设备的 <strong>Device Power</strong> 单独列出，并在上一级供电源中合并一次。</p>
+
+  <div class="power-summary">
+    <section class="power-card">
+      <p class="power-card-title">Pro XG · Garage Flex on AC</p>
+      <p class="power-card-value">463.5 / 720W <small>64.4%</small></p>
+      <div class="power-meter" aria-label="Pro XG 463.5 of 720 watts"><span style="width:64.375%"></span></div>
+      <div class="power-card-meta"><span>PoE Power Used</span><span>256.5W headroom</span></div>
+    </section>
+    <section class="power-card">
+      <p class="power-card-title">Garage Flex · AC mode</p>
+      <p class="power-card-value">55.4 / 196W <small>28.3%</small></p>
+      <div class="power-meter" aria-label="Garage Flex 55.4 of 196 watts"><span style="width:28.265%"></span></div>
+      <div class="power-card-meta"><span>PoE output · 140.6W headroom</span><span>17 + 55.4 = 72.4W device-side</span></div>
+    </section>
+    <section class="power-card">
+      <p class="power-card-title">Pro XG · Garage Flex on PoE+++</p>
+      <p class="power-card-value">532.9 / 720W <small>74.0%</small></p>
+      <div class="power-meter" aria-label="Pro XG 532.9 of 720 watts"><span style="width:74.014%"></span></div>
+      <div class="power-card-meta"><span>PoE Power Used</span><span>187.1W headroom</span></div>
+    </section>
+  </div>
+
+  <div class="power-callout">
+    <strong>Garage Flex 的 PoE+++ 输入足以运行当前负载，但仍建议 AC 作为正常方案：</strong>
+    下游为 55.4 / 76W（72.9%），理论余量 20.6W；再加 Garage Flex 自身 14W，上游 XG 端口承担 69.4 / 90W（77.1%）。官方 76W 可用值不包含长线损耗，而且剩余功率不足以充分利用四个空闲 PoE++ 口。UACC-Adapter-AC-210W 提供 196W 输出预算，当前余量 140.6W；全屋 Powerwall 已覆盖 Garage AC，因此 AC 更适合作为常态供电。
+  </div>
+
+  <h3>Pro XG · 463.5W → 532.9W</h3>
+  <p class="power-formula"><code>463.5 + (55.4 + 14) = 463.5 + 69.4 = 532.9W</code></p>
+  <div class="power-table-wrap">
+  <table class="power-table">
+    <thead>
+      <tr>
+        <th>Step</th>
+        <th class="num">Added Load</th>
+        <th class="num">XG Running Total</th>
+        <th>Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Garage Flex 使用 AC</td>
+        <td class="num">—</td>
+        <td class="num">463.5W</td>
+        <td>Garage C6A 只传输数据，Flex 不从 XG 取电</td>
+      </tr>
+      <tr>
+        <td>加入 Garage Flex 下游 PoE 输出</td>
+        <td class="num">+55.4W</td>
+        <td class="num">518.9W</td>
+        <td>U7-Lite、Garage Door Mini 子树与 USL</td>
+      </tr>
+      <tr>
+        <td>加入 Garage Flex 自身功耗</td>
+        <td class="num">+14W</td>
+        <td class="num"><strong>532.9W</strong></td>
+        <td>Garage Flex 改由 XG 的 PoE+++ 端口供电</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Pro XG · Garage Flex 使用 AC</h3>
+  <p class="power-formula"><code>30 + 180 + 63 + 9.5 + 14 + 50 + 117 = 463.5W</code></p>
+  <div class="power-table-wrap">
+    <table class="power-table">
+      <thead>
+        <tr>
+          <th>Load</th>
+          <th class="num">Qty</th>
+          <th class="num">Per Unit / Branch</th>
+          <th class="num">Subtotal</th>
+          <th>Basis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ameriDroid PoE Mini PC + ZBT-2 ×2</td>
+          <td class="num">1</td>
+          <td class="num">30W</td>
+          <td class="num">30W</td>
+          <td>Mini PC 简化按 30W；两根 ZBT-2 包含在该预留内</td>
+        </tr>
+        <tr>
+          <td>Home Assistant PoE Wallpanel</td>
+          <td class="num">3</td>
+          <td class="num">60W</td>
+          <td class="num">180W</td>
+          <td>机型未定，每路按设备侧 PoE++ 上限预留；XG 端口仍保留 PoE+++ 能力</td>
+        </tr>
+        <tr>
+          <td>U7-Pro</td>
+          <td class="num">3</td>
+          <td class="num">21W</td>
+          <td class="num">63W</td>
+          <td>Basement / Main / Upper</td>
+        </tr>
+        <tr>
+          <td>UP-Viewport</td>
+          <td class="num">1</td>
+          <td class="num">9.5W</td>
+          <td class="num">9.5W</td>
+          <td>Pro XG 直供</td>
+        </tr>
+        <tr>
+          <td>USW-Flex-2.5G-8 · non-PoE</td>
+          <td class="num">1</td>
+          <td class="num">14W</td>
+          <td class="num">14W</td>
+          <td>Media Room active C6A carries 10G + PoE+ input；八个 2.5G 下联口不输出 PoE</td>
+        </tr>
+        <tr>
+          <td>Front Door Mini subtree</td>
+          <td class="num">1</td>
+          <td class="num">50W rated cap</td>
+          <td class="num">50W</td>
+          <td>Entry 18W + Turret 15W 在 45W 输出预算内；整条支路按 Door Mini 官方 “with PoE output” 50W 上限计</td>
+        </tr>
+        <tr>
+          <td>Mud / Dining / Basement Mini subtrees</td>
+          <td class="num">3</td>
+          <td class="num">19W + 5W + 15W</td>
+          <td class="num">117W</td>
+          <td>每路 Door Mini（含 Wet 锁）+ UA-G3 + 对应 Protect 摄像头 = 39W</td>
+        </tr>
+        <tr>
+          <td><strong>Pro XG subtotal</strong></td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          <td class="num"><strong>463.5W</strong></td>
+          <td>Garage Flex 由 AC 供电；Media Room Flex 由 XG PoE+ 供电</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flex · 下游 PoE 输出</h3>
+  <p class="power-formula"><code>13 + 39 + 3.4 = 55.4W</code></p>
+  <div class="power-table-wrap">
+  <table class="power-table">
+    <thead>
+      <tr>
+        <th>Load</th>
+        <th class="num">Power</th>
+        <th>Basis</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>U7-Lite</td><td class="num">13W</td><td>Flex 直供</td></tr>
+      <tr><td>Garage Door Mini subtree</td><td class="num">39W</td><td>Door Mini 19W（含 Wet 锁）+ UA-G3 5W + Laneway Turret 15W</td></tr>
+      <tr><td>USL-Gateway</td><td class="num">3.4W</td><td>Flex 直供</td></tr>
+      <tr><td>Tesla Powerwall branch</td><td class="num">0W</td><td>仅数据，不由 PoE 供电</td></tr>
+      <tr><td><strong>Flex PoE output subtotal</strong></td><td class="num"><strong>55.4W</strong></td><td>不含 Flex 自身功耗</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>PoE 中继设备自身功耗</h3>
+  <div class="power-table-wrap">
+  <table class="power-table">
+    <thead>
+      <tr>
+        <th>Relay Device</th>
+        <th class="num">Device Power<br>(w/o output)</th>
+        <th class="num">PoE Output</th>
+        <th class="num">Upstream Draw</th>
+        <th>Accounting</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Front Door Mini</td><td class="num">19W</td><td class="num">33W</td><td class="num">50W cap</td><td>19W 与 50W 是官方无 / 有 PoE 输出两种整机上限，不直接相加；33W 输出低于 Σ45W</td></tr>
+      <tr><td>Mud Door Mini</td><td class="num">19W</td><td class="num">20W</td><td class="num">39W</td><td>UA-G3 5W + Backyard Turret 15W</td></tr>
+      <tr><td>Dining Door Mini</td><td class="num">19W</td><td class="num">20W</td><td class="num">39W</td><td>UA-G3 5W + Walkway Bullet 15W</td></tr>
+      <tr><td>Basement Door Mini</td><td class="num">19W</td><td class="num">20W</td><td class="num">39W</td><td>UA-G3 5W + Courtyard Turret 15W</td></tr>
+      <tr><td>Garage Door Mini</td><td class="num">19W</td><td class="num">20W</td><td class="num">39W</td><td>UA-G3 5W + Laneway Turret 15W；计入 Flex</td></tr>
+      <tr><td>Flex · AC mode</td><td class="num">17W</td><td class="num">55.4W</td><td class="num">72.4W + loss</td><td>自身功耗来自 AC，不进入 Pro XG PoE 合计</td></tr>
+      <tr><td>Flex · PoE+++ mode</td><td class="num">14W</td><td class="num">55.4W</td><td class="num">69.4W</td><td>整条 Garage 分支计入 Pro XG</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>不计入 PoE 合计的设备</h3>
+  <div class="power-table-wrap">
+  <table class="power-table">
+    <thead>
+      <tr><th>Device / Group</th><th>Treatment</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TELUS NAH</td><td>市电供电；当前 Spec 未列自身功耗</td></tr>
+      <tr><td>UDM-Pro-Max</td><td>市电供电；自身功耗不属于 PoE 输出预算</td></tr>
+      <tr><td>UACC-CM-RJ45-MG</td><td>由 SFP 主机供电；当前未单独计值</td></tr>
+      <tr><td>UACC-DAC-SFP10</td><td>不分配 PoE 功率</td></tr>
+      <tr><td>USW-Pro-XG-24-PoE</td><td>市电供电；720W 是 PoE 输出预算，不是交换机墙端功耗</td></tr>
+      <tr><td>UACC-Adapter-AC-210W</td><td>Flex 的供电源；196W 是 Flex 可用 PoE 输出预算</td></tr>
+      <tr><td>Room drops / keystones</td><td>被动器件，0W</td></tr>
+      <tr><td>Synology FS2500</td><td>市电供电，不从 Pro XG 获取 PoE；官网 Access ≈74.83W</td></tr>
+      <tr><td>Tesla Powerwall / Gateway 3</td><td>设备自身系统供电；Ethernet / CAN 仅传输数据</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="power-footnote"><strong>避免重复计算：</strong>叶节点只在直接供电它的 PSE 下计一次。Media Room 非 PoE Flex 仅计自身 14W，没有下游 PoE 输出。Door Mini 的 19W（without PoE output）与 50W（with PoE output）是两种整机上限；一般支路以 19W + 实际输出估算，但不得超过 50W。Garage Flex 使用 PoE+++ 时，XG 只加入整条 Flex 上游功耗 69.4W，不再额外重复加入 55.4W。</p>
+
   <h2 class="ha-guide-heading">Home Assistant Setup Guide</h2>
   <p class="lede">面向零基础的搭建说明：按本页设备清单，从主机到墙面平板、Zigbee、备份与日常维护。建议从上到下按顺序做；标有「可选」的步骤可延后。</p>
 
@@ -570,4 +774,5 @@
   </ul>
   <p class="lede">本指南会随你的实际安装进度继续补洞（VLAN、具体自动化模板、Protect 集成步骤等）。先把第 4–6 节跑通，就是成功的第一步。</p>
   </article>
+  </div>
   </section>

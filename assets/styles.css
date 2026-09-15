@@ -100,6 +100,7 @@ html, body {
     }
 
     .spa-nav .spa-export-button {
+      margin-left: auto;
       border-color: #1a6bb5;
       background: #1a6bb5;
       color: #fff;
@@ -248,9 +249,116 @@ html, body {
       overflow: auto;
     }
 
+    .design-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 42rem) minmax(0, 1fr);
+      column-gap: 2rem;
+      align-items: start;
+      min-height: 100%;
+    }
+
+    .design-toc {
+      position: sticky;
+      top: 0;
+      justify-self: end;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 15.5rem;
+      max-height: calc(100vh - 4.2rem);
+      overflow: auto;
+      padding: 1.4rem 0.35rem 2.6rem 1.15rem;
+    }
+
+    .design-toc-title {
+      margin: 0 0 0.55rem;
+      color: #6a737d;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .design-toc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .design-toc-list a {
+      display: block;
+      padding: 0.16rem 0.4rem;
+      border-left: 2px solid transparent;
+      color: #586069;
+      text-decoration: none;
+      line-height: 1.35;
+    }
+
+    .design-toc-list a:hover {
+      color: #1a6bb5;
+    }
+
+    .design-toc-list a.is-active {
+      border-left-color: #1a6bb5;
+      color: #1b1f23;
+      font-weight: 650;
+    }
+
+    .design-toc-list .toc-h2 {
+      margin-top: 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .design-toc-list .toc-h2:first-child {
+      margin-top: 0;
+    }
+
+    .design-toc-list .toc-h3 {
+      padding-left: 0.75rem;
+      font-size: 0.76rem;
+    }
+
+    .design-toc-list .toc-h4 {
+      padding-left: 1.35rem;
+      color: #6a737d;
+      font-size: 0.72rem;
+    }
+
     .spa-article {
       max-width: 48rem;
       padding: 1.1rem 1.4rem 2.4rem;
+    }
+
+    .spa-design .spa-article {
+      max-width: none;
+      padding: 2.15rem 0.25rem 4.6rem;
+      color: #24292e;
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+
+    .spa-design .spa-article h2 {
+      margin-top: 2.7rem;
+      font-size: 1.52rem;
+      letter-spacing: -0.02em;
+      border-bottom-color: #eaecef;
+    }
+
+    .spa-design .spa-article h2:first-child {
+      margin-top: 0;
+    }
+
+    .spa-design .spa-article .lede {
+      color: #444c56;
+    }
+
+    .spa-design .spa-article table {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .spa-design .spa-article th,
+    .spa-design .spa-article td {
+      white-space: normal;
     }
 
     .spa-article h2:first-child {
@@ -408,8 +516,6 @@ html, body {
     .udc-port.gbe1 { --port-c: #38cc65; background: #38cc65; }
     .udc-port.gbe2p5 { --port-c: #99c5ff; background: #99c5ff; }
     .udc-port.gbe10 { --port-c: #3a9fcb; background: #3a9fcb; }
-    .udc-port.gbe25 { --port-c: #c696ee; background: #c696ee; }
-    .udc-port.gbe100 { --port-c: #0049a8; background: #0049a8; color: #fff; }
     .udc-port.fe { --port-c: #f0b429; background: #f0b429; } /* 100M */
     .udc-port.other {
       --port-c: #c4785a;
@@ -629,7 +735,6 @@ html, body {
       height: 0.95rem;
     }
 
-    .udc-port.gbe100 .udc-poe,
     .udc-port.sfp .udc-poe,
     .udc-port.other .udc-poe {
       color: #fafafa;
@@ -1583,6 +1688,14 @@ html, body {
       padding: 1.1rem 1.4rem 2.4rem;
     }
 
+    .spa-design .power-summary {
+      gap: 0.65rem;
+    }
+
+    .spa-design .power-table {
+      min-width: 36rem;
+    }
+
     .power-report h2:first-child {
       margin-top: 0;
     }
@@ -1722,6 +1835,90 @@ html, body {
     .print-toolbar small {
       color: #666;
       font-size: 0.72rem;
+    }
+
+    #export-root {
+      position: absolute;
+      left: -280in;
+      top: 0;
+      width: 24in;
+      pointer-events: none;
+    }
+
+    .export-sheet {
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      background: #fff;
+      color: #172635;
+      border: 0.09in solid #17324d;
+      padding: 0.22in;
+    }
+
+    .export-sheet.is-portrait {
+      width: 18in;
+      height: 24in;
+    }
+
+    .export-sheet.is-landscape {
+      width: 24in;
+      height: 18in;
+    }
+
+    .export-sheet .blueprint-grid.export-grid-devices {
+      grid-template-columns: 4.6fr 13.4fr;
+    }
+
+    .export-sheet .blueprint-grid.export-grid-topology {
+      grid-template-columns: 4.4fr 19fr;
+    }
+
+    .export-article {
+      box-sizing: border-box;
+      width: 7.4in;
+      padding: 0;
+      background: #fff;
+      color: #24292e;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+
+    .export-article h2 {
+      margin-top: 1.15rem;
+      font-size: 14pt;
+    }
+
+    .export-article h2:first-child {
+      margin-top: 0;
+    }
+
+    .export-article h3 {
+      margin-top: 0.85rem;
+      font-size: 12pt;
+    }
+
+    .export-article h4 {
+      margin-top: 0.65rem;
+      font-size: 10.5pt;
+    }
+
+    .export-article table {
+      width: 100%;
+      max-width: 100%;
+      font-size: 8pt;
+    }
+
+    .export-article th,
+    .export-article td {
+      white-space: normal;
+    }
+
+    .export-article .power-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .export-article .power-table {
+      min-width: 0;
     }
 
     .blueprint-page-shell {
@@ -1904,7 +2101,7 @@ html, body {
       text-align: center;
     }
 
-    body.blueprint-source-measure #tab-topology {
+    body.export-source-measure #tab-topology {
       position: fixed !important;
       left: -100000px !important;
       top: 0 !important;
@@ -1939,10 +2136,13 @@ html, body {
         background: #fff;
       }
 
-      body.print-blueprint .spa-bar,
+      body.print-design .design-toc,
       body.print-design .spa-bar,
-      body.print-blueprint .print-toolbar,
-      body.print-design .print-toolbar {
+      body.print-devices .spa-bar,
+      body.print-topology .spa-bar,
+      body.print-blueprint .spa-bar,
+      body.print-design .print-toolbar,
+      body.print-blueprint .print-toolbar {
         display: none !important;
       }
 
@@ -1970,9 +2170,30 @@ html, body {
         margin: 0 auto;
       }
 
+      body.print-devices .spa-tab,
+      body.print-topology .spa-tab {
+        display: none !important;
+      }
+
+      body.print-devices #export-root,
+      body.print-topology #export-root {
+        position: static;
+        left: auto;
+        width: auto;
+        pointer-events: auto;
+      }
+
       body.print-design #tab-design {
         display: block !important;
         overflow: visible !important;
+      }
+
+      body.print-design .design-shell {
+        display: block;
+      }
+
+      body.print-design .design-toc {
+        display: none !important;
       }
 
       body.print-design .spa-article {
@@ -2041,6 +2262,20 @@ html, body {
 
       .power-summary {
         grid-template-columns: 1fr;
+      }
+
+      .design-shell {
+        grid-template-columns: minmax(0, 42rem);
+        justify-content: center;
+        column-gap: 0;
+      }
+
+      .design-toc {
+        display: none;
+      }
+
+      .spa-design .spa-article {
+        padding: 1.3rem 1.1rem 3rem;
       }
 
       .blueprint-title-block {

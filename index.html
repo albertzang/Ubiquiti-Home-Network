@@ -35,18 +35,16 @@
     <nav class="spa-nav" aria-label="Sections">
       <button type="button" data-tab="devices" class="is-on">Devices</button>
       <button type="button" data-tab="topology">Topology</button>
-      <button type="button" data-tab="power">PoE Power</button>
       <button type="button" data-tab="design">Design</button>
-      <div class="spa-blueprint-actions" role="group" aria-label="Blueprint PDF · ARCH D">
-        <span class="spa-blueprint-label">Blueprint PDF · ARCH D</span>
-        <button type="button" data-tab="blueprint" class="spa-preview-button">Preview</button>
-        <button type="button" id="export-blueprint-pdf" class="spa-export-button" title="Print with Margins: Default and Background graphics enabled">Export</button>
-      </div>
+      <button type="button" id="export-page-pdf" class="spa-export-button">Export PDF · Arch C Portrait</button>
     </nav>
   </header>
 
+  <div id="export-root" aria-hidden="true"></div>
   <div id="spa-content-loader" class="spa-loading" role="status">Loading home network specification…</div>
   <noscript><p class="spa-loading">JavaScript is required to load this specification.</p></noscript>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 (async function () {
   var host = document.getElementById("spa-content-loader");
-  var names = ["devices", "topology", "power", "blueprint", "design", "legend"];
+  var names = ["devices", "topology", "design", "legend"];
   var fragments;
   try {
     fragments = await Promise.all(names.map(async function (name) {
@@ -56,6 +56,54 @@
           setCollapsed(!panel.classList.contains("is-collapsed"), true);
         });
       });
+    })();
+
+    (function () {
+      var article = document.querySelector("#tab-design .spa-article");
+      var toc = document.querySelector("#tab-design .design-toc");
+      var scroller = document.getElementById("tab-design");
+      if (!article || !toc || !scroller) return;
+
+      var list = document.createElement("ol");
+      list.className = "design-toc-list";
+      var links = [];
+      Array.prototype.forEach.call(article.querySelectorAll("h2, h3, h4"), function (heading, index) {
+        var raw = (heading.textContent || "section").replace(/\s+/g, " ").trim();
+        if (!heading.id) {
+          heading.id = "d-" + index + "-" + raw.toLowerCase().replace(/[^\w\u4e00-\u9fff]+/g, "-").replace(/^-+|-+$/g, "");
+        }
+        heading.style.scrollMarginTop = "0.6rem";
+        var item = document.createElement("li");
+        item.className = "toc-" + heading.tagName.toLowerCase();
+        var link = document.createElement("a");
+        link.href = "#" + heading.id;
+        link.textContent = raw;
+        link.addEventListener("click", function (event) {
+          event.preventDefault();
+          var top = heading.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - 8;
+          scroller.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        });
+        item.appendChild(link);
+        list.appendChild(item);
+        links.push({ heading: heading, link: link });
+      });
+      toc.innerHTML = "";
+      var title = document.createElement("p");
+      title.className = "design-toc-title";
+      title.textContent = "On this page";
+      toc.appendChild(title);
+      toc.appendChild(list);
+
+      if (!("IntersectionObserver" in window)) return;
+      var observer = new IntersectionObserver(function (entries) {
+        var visible = entries.filter(function (entry) { return entry.isIntersecting; });
+        if (!visible.length) return;
+        var top = visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; })[0];
+        links.forEach(function (item) {
+          item.link.classList.toggle("is-active", item.heading === top.target);
+        });
+      }, { root: scroller, rootMargin: "0px 0px -72% 0px", threshold: 0 });
+      links.forEach(function (item) { observer.observe(item.heading); });
     })();
 
 (function () {
@@ -2203,23 +2251,29 @@
     })();
 
 (function () {
-      var sheet = document.getElementById("blueprint-sheet");
+      var exportRoot = document.getElementById("export-root");
+      var exportButton = document.getElementById("export-page-pdf");
       var pageStyle = document.createElement("style");
       pageStyle.id = "print-page-size";
+      var currentTab = "devices";
+      var papers = {
+        devices: { label: "Arch C Portrait", filename: "Home-Network-Devices-Arch-C.pdf" },
+        topology: { label: "Arch C Landscape", filename: "Home-Network-Topology-Arch-C.pdf" },
+        design: { label: "US Letter", filename: "Home-Network-Design-Letter.pdf" }
+      };
 
-      function sourceFor(kind) {
-        if (kind === "legend") return document.querySelector("#legend-source .spa-legend-content");
-        if (kind === "devices") return document.querySelector("#tab-devices .spa-main > table");
-        if (kind === "topology") return document.querySelector("#topo-canvas .topo-stage");
-        return null;
+      function waitFrame() {
+        return new Promise(function (resolve) {
+          requestAnimationFrame(function () { requestAnimationFrame(resolve); });
+        });
       }
 
-      function clearTarget(target) {
-        if (!target) return;
-        target.innerHTML = "";
-        target.style.left = "0px";
-        target.style.top = "0px";
-        target.style.transform = "none";
+      function sourceFor(kind) {
+        if (kind === "legend") return document.querySelector("#legend-source .spa-legend-content") || document.querySelector("#legend-topo .spa-legend-content");
+        if (kind === "devices") return document.querySelector("#tab-devices .spa-main > table");
+        if (kind === "topology") return document.querySelector("#topo-canvas .topo-stage");
+        if (kind === "design") return document.querySelector("#tab-design .spa-article");
+        return null;
       }
 
       function stripCloneIds(root, preserveTopologyMarkers) {
@@ -2241,37 +2295,17 @@
         }
       }
 
-      function buildDevices() {
-        var target = document.querySelector('[data-blueprint-target="devices"]');
-        var source = sourceFor("devices");
-        if (!target || !source) return;
-        clearTarget(target);
-        var clone = source.cloneNode(true);
-        stripCloneIds(clone, false);
-        clone.classList.add("blueprint-devices-table");
-        Array.prototype.forEach.call(clone.querySelectorAll("tbody tr > td:last-child"), addBreakOpportunities);
-        target.appendChild(clone);
-      }
-
-      function buildLegend() {
-        var target = document.querySelector('[data-blueprint-target="legend"]');
-        var source = sourceFor("legend");
-        if (!target || !source) return;
-        clearTarget(target);
-        var clone = source.cloneNode(true);
-        stripCloneIds(clone, false);
-        clone.className = "blueprint-legend";
-        target.appendChild(clone);
-      }
-
       function cloneSource(kind) {
-        var target = document.querySelector('[data-blueprint-target="' + kind + '"]');
         var source = sourceFor(kind);
-        if (!target || !source) return;
-        clearTarget(target);
+        if (!source) return null;
         var clone = source.cloneNode(true);
         stripCloneIds(clone, kind === "topology");
-        target.appendChild(clone);
+        if (kind === "devices") {
+          Array.prototype.forEach.call(clone.querySelectorAll("tbody tr > td:last-child"), addBreakOpportunities);
+          clone.classList.add("blueprint-devices-table");
+        }
+        if (kind === "legend") clone.className = "blueprint-legend";
+        return clone;
       }
 
       function fitTarget(target) {
@@ -2290,93 +2324,236 @@
         var availableHeight = Math.max(1, viewport.clientHeight - padTop - padBottom);
         var width = Math.max(content.scrollWidth, content.offsetWidth, 1);
         var height = Math.max(content.scrollHeight, content.offsetHeight, 1);
-        var scale = Math.min(availableWidth / width, availableHeight / height);
+        var scale = Math.min(availableWidth / width, availableHeight / height, 1);
         if (!isFinite(scale) || scale <= 0) return null;
-        return {
-          target: target,
-          viewport: viewport,
-          width: width,
-          height: height,
-          fit: scale,
-          padLeft: padLeft,
-          padTop: padTop,
-          availableWidth: availableWidth,
-          availableHeight: availableHeight
-        };
+        target.style.transform = "scale(" + scale + ")";
+        target.style.left = padLeft + Math.max(0, (availableWidth - width * scale) / 2) + "px";
+        target.style.top = padTop + Math.max(0, (availableHeight - height * scale) / 2) + "px";
+        return scale;
       }
 
-      function fitBlueprint() {
-        if (!sheet) return;
-        var measured = [];
-        Array.prototype.forEach.call(sheet.querySelectorAll(".blueprint-scale"), function (target) {
-          var item = fitTarget(target);
-          if (item) measured.push(item);
-        });
-        if (!measured.length) return;
-        var commonScale = measured.reduce(function (smallest, item) {
-          return Math.min(smallest, item.fit);
-        }, Infinity);
-        measured.forEach(function (item) {
-          item.target.style.transform = "scale(" + commonScale + ")";
-          item.target.style.left = item.padLeft + Math.max(0, (item.availableWidth - item.width * commonScale) / 2) + "px";
-          item.target.style.top = item.padTop + "px";
+      function buildSheet(kind) {
+        if (!exportRoot) return null;
+        exportRoot.innerHTML = "";
+        var sheet = document.createElement("div");
+        sheet.className = "export-sheet " + (kind === "devices" ? "is-portrait" : "is-landscape");
+        var title = kind === "devices" ? "HOME NETWORK · DEVICES SCHEDULE" : "HOME NETWORK · PHYSICAL TOPOLOGY";
+        var subtitle = kind === "devices" ? "Legend · Compact device schedule" : "Legend · Physical topology";
+        var size = kind === "devices" ? "ARCH C · 18 × 24 IN · PORTRAIT" : "ARCH C · 24 × 18 IN · LANDSCAPE";
+        var panelTitle = kind === "devices" ? "A · Compact Devices Schedule" : "B · Network Topology";
+        sheet.innerHTML =
+          '<header class="blueprint-header"><div><h2>' + title + '</h2><p>' + subtitle + '</p></div><p>' + size + '</p></header>' +
+          '<div class="blueprint-grid export-grid-' + kind + '">' +
+          '<section class="blueprint-panel"><h3>Legend</h3><div class="blueprint-viewport"><div class="blueprint-scale" data-export="legend"></div></div></section>' +
+          '<section class="blueprint-panel"><h3>' + panelTitle + '</h3><div class="blueprint-viewport"><div class="blueprint-scale" data-export="main"></div></div></section>' +
+          '</div>' +
+          '<footer class="blueprint-title-block">' +
+          '<div><strong>Home Network Spec</strong>Issued for on-site coordination</div>' +
+          '<div><strong>Scope</strong>' + (kind === "devices" ? "Devices · Legend" : "Topology · Legend") + '</div>' +
+          '<div><strong>Sheet</strong>' + (kind === "devices" ? "N-001" : "N-002") + '</div>' +
+          '<div><strong>Format</strong>' + (kind === "devices" ? "ARCH C · Portrait" : "ARCH C · Landscape") + '</div>' +
+          '</footer>';
+        exportRoot.appendChild(sheet);
+        var legendTarget = sheet.querySelector('[data-export="legend"]');
+        var mainTarget = sheet.querySelector('[data-export="main"]');
+        var legend = cloneSource("legend");
+        var main = cloneSource(kind);
+        if (legend && legendTarget) legendTarget.appendChild(legend);
+        if (main && mainTarget) mainTarget.appendChild(main);
+        return sheet;
+      }
+
+      function pdfCtor() {
+        return window.jspdf && window.jspdf.jsPDF;
+      }
+
+      function captureNode(node, scale) {
+        return window.html2canvas(node, {
+          scale: scale || 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: Math.max(node.scrollWidth, node.offsetWidth),
+          windowHeight: Math.max(node.scrollHeight, node.offsetHeight)
         });
       }
 
-      function renderBlueprint(done) {
-        if (!sheet) return;
-        document.body.classList.add("blueprint-source-measure");
-        requestAnimationFrame(function () {
+      async function exportSheetPdf(kind) {
+        if (kind === "topology") {
+          document.body.classList.add("export-source-measure");
           if (typeof window.relayoutTopo === "function") window.relayoutTopo();
-          requestAnimationFrame(function () {
-            buildDevices();
-            buildLegend();
-            cloneSource("topology");
-            document.body.classList.remove("blueprint-source-measure");
-            requestAnimationFrame(function () {
-              fitBlueprint();
-              if (done) done();
-            });
+          await waitFrame();
+        }
+        var sheet = buildSheet(kind);
+        await waitFrame();
+        Array.prototype.forEach.call(sheet.querySelectorAll(".blueprint-scale"), fitTarget);
+        await waitFrame();
+        document.body.classList.remove("export-source-measure");
+        var canvas = await captureNode(sheet, 1.75);
+        exportRoot.innerHTML = "";
+        var PDF = pdfCtor();
+        var pdf = kind === "devices"
+          ? new PDF({ unit: "in", format: [18, 24], orientation: "portrait", compress: true })
+          : new PDF({ unit: "in", format: [24, 18], orientation: "landscape", compress: true });
+        var pageW = kind === "devices" ? 18 : 24;
+        var pageH = kind === "devices" ? 24 : 18;
+        var data = canvas.toDataURL("image/jpeg", 0.92);
+        pdf.addImage(data, "JPEG", 0, 0, pageW, pageH);
+        return pdf;
+      }
+
+      async function exportDesignPdf() {
+        var source = sourceFor("design");
+        if (!source || !exportRoot) throw new Error("Design article not found");
+        exportRoot.innerHTML = "";
+        var wrap = document.createElement("div");
+        wrap.className = "export-article";
+        var clone = cloneSource("design");
+        wrap.appendChild(clone);
+        exportRoot.appendChild(wrap);
+        await waitFrame();
+        var canvas = await captureNode(wrap, 2);
+        exportRoot.innerHTML = "";
+        var PDF = pdfCtor();
+        var pdf = new PDF({ unit: "in", format: "letter", orientation: "portrait", compress: true });
+        var pageW = 8.5;
+        var pageH = 11;
+        var margin = 0.55;
+        var contentW = pageW - margin * 2;
+        var contentH = pageH - margin * 2;
+        var pxPageH = Math.max(1, Math.floor(canvas.width * contentH / contentW));
+        var offset = 0;
+        var page = 0;
+        while (offset < canvas.height) {
+          var sliceH = Math.min(pxPageH, canvas.height - offset);
+          var pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceH;
+          var ctx = pageCanvas.getContext("2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(canvas, 0, offset, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          if (page) pdf.addPage();
+          var sliceIn = sliceH * contentW / canvas.width;
+          pdf.addImage(pageCanvas.toDataURL("image/jpeg", 0.92), "JPEG", margin, margin, contentW, sliceIn);
+          offset += pxPageH;
+          page += 1;
+        }
+        return pdf;
+      }
+
+      async function pickSaveTarget(filename) {
+        if (typeof window.showSaveFilePicker !== "function") return null;
+        try {
+          return await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: "PDF document", accept: { "application/pdf": [".pdf"] } }]
           });
-        });
-      }
-
-      function clearPrintMode() {
-        document.body.classList.remove("print-blueprint", "print-design");
-        if (pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
-      }
-
-      function exportPDF(mode) {
-        clearPrintMode();
-        document.body.classList.add(mode === "blueprint" ? "print-blueprint" : "print-design");
-        pageStyle.textContent = mode === "blueprint"
-          ? "@page { size: 36in 24in; margin: 0.3in 0.4in; }"
-          : "@page { size: 8.5in 11in; margin: 0.55in; }";
-        document.head.appendChild(pageStyle);
-        if (mode === "blueprint") {
-          renderBlueprint(function () { setTimeout(function () { window.print(); }, 80); });
-        } else {
-          setTimeout(function () { window.print(); }, 30);
+        } catch (error) {
+          if (error && error.name === "AbortError") throw error;
+          return null;
         }
       }
 
-      var blueprintButton = document.getElementById("export-blueprint-pdf");
-      var designButton = document.getElementById("export-design-pdf");
-      if (blueprintButton) blueprintButton.addEventListener("click", function () { exportPDF("blueprint"); });
-      if (designButton) designButton.addEventListener("click", function () { exportPDF("design"); });
+      async function savePdf(pdf, filename, handle) {
+        var blob = pdf.output("blob");
+        if (handle) {
+          var writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        }
+        var link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(link.href);
+          link.remove();
+        }, 1000);
+      }
 
-      window.addEventListener("beforeprint", function () {
-        if (document.body.classList.contains("print-blueprint")) fitBlueprint();
-      });
-      window.addEventListener("afterprint", function () {
+      function clearPrintMode() {
+        document.body.classList.remove("print-blueprint", "print-design", "print-devices", "print-topology", "export-source-measure");
+        if (pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
+        if (exportRoot) exportRoot.innerHTML = "";
+      }
+
+      function printFallback(kind) {
         clearPrintMode();
-        if (location.hash === "#blueprint") renderBlueprint();
-      });
-      window.addEventListener("resize", function () {
-        if (location.hash === "#blueprint") fitBlueprint();
-      });
+        if (kind === "design") {
+          document.body.classList.add("print-design");
+          pageStyle.textContent = "@page { size: 8.5in 11in; margin: 0.55in; }";
+          document.head.appendChild(pageStyle);
+          setTimeout(function () { window.print(); }, 30);
+          return;
+        }
+        document.body.classList.add(kind === "devices" ? "print-devices" : "print-topology");
+        pageStyle.textContent = kind === "devices"
+          ? "@page { size: 18in 24in; margin: 0; }"
+          : "@page { size: 24in 18in; margin: 0; }";
+        document.head.appendChild(pageStyle);
+        var ready = kind === "topology"
+          ? (document.body.classList.add("export-source-measure"), typeof window.relayoutTopo === "function" && window.relayoutTopo(), waitFrame())
+          : waitFrame();
+        ready.then(function () {
+          var sheet = buildSheet(kind);
+          return waitFrame().then(function () { return sheet; });
+        }).then(function (sheet) {
+          document.body.classList.remove("export-source-measure");
+          if (sheet) Array.prototype.forEach.call(sheet.querySelectorAll(".blueprint-scale"), fitTarget);
+          setTimeout(function () { window.print(); }, 80);
+        });
+      }
 
-      window.renderBlueprint = renderBlueprint;
+      function setExportLabel(key) {
+        currentTab = key;
+        var spec = papers[key] || papers.devices;
+        if (exportButton) exportButton.textContent = "Export PDF · " + spec.label;
+      }
+
+      window.setExportLabel = setExportLabel;
+
+      if (exportButton) {
+        exportButton.addEventListener("click", async function () {
+          var key = currentTab;
+          var spec = papers[key];
+          if (!spec) return;
+          var handle;
+          try {
+            handle = await pickSaveTarget(spec.filename);
+          } catch (error) {
+            if (error && error.name === "AbortError") return;
+          }
+          if (!window.html2canvas || !pdfCtor()) {
+            printFallback(key);
+            return;
+          }
+          exportButton.disabled = true;
+          var previous = exportButton.textContent;
+          exportButton.textContent = "Exporting…";
+          try {
+            var pdf = key === "design" ? await exportDesignPdf() : await exportSheetPdf(key);
+            await savePdf(pdf, spec.filename, handle);
+          } catch (error) {
+            if (!(error && error.name === "AbortError")) {
+              console.error(error);
+              printFallback(key);
+            }
+          } finally {
+            exportButton.disabled = false;
+            exportButton.textContent = previous;
+            if (exportRoot) exportRoot.innerHTML = "";
+            document.body.classList.remove("export-source-measure");
+          }
+        });
+      }
+
+      window.addEventListener("afterprint", clearPrintMode);
     })();
 
 (function () {
@@ -2395,14 +2572,12 @@
           b.classList.toggle("is-on", b.getAttribute("data-tab") === key);
         });
         if (history.replaceState) history.replaceState(null, "", "#" + key);
+        if (typeof window.setExportLabel === "function") window.setExportLabel(key);
         if (key === "topology" && typeof window.relayoutTopo === "function") {
           requestAnimationFrame(function () {
             window.relayoutTopo();
             setTimeout(window.relayoutTopo, 60);
           });
-        }
-        if (key === "blueprint" && typeof window.renderBlueprint === "function") {
-          window.renderBlueprint();
         }
       }
 
@@ -2411,8 +2586,6 @@
       });
 
       var initial = (location.hash || "").replace("#", "");
-      if (initial === "topo") initial = "topology";
-      if (initial === "blueprint2") initial = "blueprint";
       show(initial || "devices");
     })();
 })();
