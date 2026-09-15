@@ -137,13 +137,69 @@ html, body {
       display: grid;
       grid-template-columns: 20rem minmax(0, 1fr);
       min-height: 0;
+      transition: grid-template-columns 180ms ease;
+    }
+
+    .spa-split.is-on.legend-collapsed {
+      grid-template-columns: 2.15rem minmax(0, 1fr);
     }
 
     .spa-legend {
-      overflow: auto;
-      padding: 0.7rem 0.85rem 1.2rem;
+      position: relative;
+      z-index: 2;
+      min-height: 0;
+      overflow: visible;
+      padding: 0;
       border-right: 1px solid #ddd;
       background: #fafafa;
+    }
+
+    .spa-legend-content {
+      box-sizing: border-box;
+      height: 100%;
+      overflow: auto;
+      padding: 0.7rem 0.85rem 1.2rem;
+    }
+
+    .spa-legend-toggle {
+      position: absolute;
+      z-index: 5;
+      top: 50%;
+      right: 0;
+      display: flex;
+      width: 1.3rem;
+      height: 2.6rem;
+      margin: 0;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #c7d0d8;
+      border-radius: 999px;
+      background: #fff;
+      color: #465766;
+      font: 700 1rem/1 sans-serif;
+      transform: translate(50%, -50%);
+      cursor: pointer;
+    }
+
+    .spa-legend-toggle:hover,
+    .spa-legend-toggle:focus-visible {
+      border-color: #6f9fc7;
+      background: #edf5fb;
+      color: #104c7d;
+    }
+
+    .spa-legend-toggle:focus-visible {
+      outline: 2px solid #79a9d0;
+      outline-offset: 1px;
+    }
+
+    .spa-legend.is-collapsed {
+      overflow: visible;
+      padding: 0;
+    }
+
+    .spa-legend.is-collapsed .spa-legend-content {
+      display: none;
     }
 
     .spa-legend h2 {
@@ -156,6 +212,18 @@ html, body {
       font-size: 0.82rem;
       font-weight: 700;
       color: #444;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .spa-main {
@@ -768,7 +836,7 @@ html, body {
     .topo-node.topo-xg > .topo-mid::after {
       content: "";
       display: block;
-      width: 68%;
+      width: 100%;
       margin-top: 0.3rem;
       border-top: 1px solid #c7d0d8;
     }
@@ -1938,14 +2006,33 @@ html, body {
     }
 
     @media (max-width: 1100px) {
-      .spa-split.is-on {
+      .spa-split.is-on,
+      .spa-split.is-on.legend-collapsed {
         grid-template-columns: 1fr;
       }
 
       .spa-legend {
+        overflow: hidden;
         border-right: none;
         border-bottom: 1px solid #ddd;
         max-height: 14rem;
+      }
+
+      .spa-legend.is-collapsed {
+        overflow: hidden;
+        padding: 0;
+      }
+
+      .spa-legend.is-collapsed .spa-legend-content {
+        display: block;
+      }
+
+      .spa-legend-content {
+        max-height: 14rem;
+      }
+
+      .spa-legend-toggle {
+        display: none;
       }
 
       .topo-wrap {

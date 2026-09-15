@@ -19,8 +19,45 @@
   host.remove();
   ["legend-source", "legend-topo"].forEach(function (id) {
     var target = document.getElementById(id);
-    if (target) target.innerHTML = legend;
+    if (!target) return;
+    var content = target.querySelector(".spa-legend-content");
+    if (content) content.innerHTML = legend;
+    else target.innerHTML = legend;
   });
+
+(function () {
+      Array.prototype.forEach.call(document.querySelectorAll("[data-collapsible-legend]"), function (panel) {
+        var section = panel.closest(".spa-split");
+        var toggle = panel.querySelector(".spa-legend-toggle");
+        if (!section || !toggle) return;
+        var storageKey = "legendCollapsed:" + (panel.getAttribute("data-legend-key") || section.getAttribute("data-tab") || "default");
+
+        function setCollapsed(collapsed, remember) {
+          section.classList.toggle("legend-collapsed", collapsed);
+          panel.classList.toggle("is-collapsed", collapsed);
+          toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+          toggle.setAttribute("title", collapsed ? "Expand Legend from the left" : "Collapse Legend to the left");
+          var icon = toggle.querySelector("[aria-hidden]");
+          var label = toggle.querySelector(".sr-only");
+          if (icon) icon.textContent = collapsed ? "›" : "‹";
+          if (label) label.textContent = collapsed ? "Expand Legend" : "Collapse Legend";
+          if (remember) {
+            try { localStorage.setItem(storageKey, collapsed ? "1" : "0"); } catch (error) {}
+          }
+          setTimeout(function () {
+            window.dispatchEvent(new Event("resize"));
+          }, 190);
+        }
+
+        var saved = false;
+        try { saved = localStorage.getItem(storageKey) === "1"; } catch (error) {}
+        setCollapsed(saved, false);
+        toggle.addEventListener("click", function () {
+          setCollapsed(!panel.classList.contains("is-collapsed"), true);
+        });
+      });
+    })();
+
 (function () {
       var canvas = document.getElementById("topo-canvas");
       if (!canvas) return;
@@ -100,12 +137,12 @@
 
       var UI = "https://store.ui.com/us/en/products/";
       var nodes = [
-        { id: "nah", ltr: true, name: "TELUS Network Access Hub", loc: "Rack Cabinet", href: "https://www.telus.com/en/bc/internet", info: "XGS-PON ends here. 10G RJ45 WAN out.",
+        { id: "nah", ltr: true, name: "TELUS Network Access Hub", loc: "Rack Cabinet", href: "https://www.telus.com/en/bc/internet", info: "XGS-PON ends here. 10G RJ45 WAN out over a Cat6 rack patch.",
           up: [P("nah-pon", "other", { t: "F", title: "XGS-PON fiber in" })],
           down: idleMany(4, "nah-1g", "gbe1", { title: "1G RJ45 unused", idle: true }).concat([
-            P("nah-10g", "gbe10", { poe: "wan", title: "10G RJ45 WAN out · Cat6A to UDM CM adapter", child: "udm" })
+            P("nah-10g", "gbe10", { poe: "wan", title: "10G RJ45 WAN out · Cat6 rack patch to UDM CM adapter", child: "udm" })
           ]) },
-        { id: "udm", vlan: "management", ltr: true, name: "UDM-Pro-Max", loc: "Rack Cabinet", href: UI + "udm-pro-max", info: "NAH Cat6A terminates at the RJ45 face of a UACC-CM-RJ45-MG inserted in UDM WAN SFP+. LAN SFP+ connects directly to Pro XG by one DAC.",
+        { id: "udm", vlan: "management", ltr: true, name: "UDM-Pro-Max", loc: "Rack Cabinet", href: UI + "udm-pro-max", info: "NAH Cat6 rack patch terminates at the RJ45 face of a UACC-CM-RJ45-MG inserted in UDM WAN SFP+. LAN SFP+ connects directly to Pro XG by one DAC.",
           embed: [
             { name: "UACC-CM-RJ45-MG · RJ45 ↔ SFP+", href: UI + "uacc-cm-rj45-mg" }
           ],
@@ -146,7 +183,7 @@
             P("xg-spare-10g-2", "gbe10", { poe: "ppp", title: "10G PoE+++ spare", idle: true }),
             P("xg-spare-10g-3", "gbe10", { poe: "ppp", title: "10G PoE+++ spare", idle: true })
           ] },
-        { id: "nas", vlan: "servers", inbound: "nas-10g", name: "Synology FS2500", loc: "Rack Cabinet", href: "https://www.synology.com/en-us/products/FS2500", info: "1U all-flash · 12×2.5\" SATA SSD. 2×10G LACP to Pro XG; 2×1G unused. 2×USB 3.2 + Console unused.",
+        { id: "nas", vlan: "servers", inbound: "nas-10g", name: "Synology FS2500", loc: "Rack Cabinet", href: "https://www.synology.com/en-us/products/FS2500", info: "1U all-flash · 12×2.5\" SATA SSD. 2×10G LACP to Pro XG over Cat6 rack patches; 2×1G unused. 2×USB 3.2 + Console unused.",
           up: [
             P("nas-1g1", "gbe1", { title: "1G unused", idle: true }),
             P("nas-1g2", "gbe1", { title: "1G unused", idle: true }),
@@ -158,7 +195,7 @@
             P("nas-usb2", "other", { t: "USB-3", title: "USB 3.2 unused", idle: true }),
             P("nas-con", "other", { t: "COM", title: "Console unused", idle: true })
           ] },
-        { id: "ha", vlan: "servers", ltr: true, name: "ameriDroid PoE Mini PC for Home Assistant", loc: "Rack Cabinet", href: "https://ameridroid.com/products/poe-mini-pc-for-home-assistant", info: "4×2.5G Intel I225/I226: one PoE++ IN plus three unused NICs are shown on the upstream side. Two nested ZBT-2 radios: Zigbee on USB-C, Thread on USB-3 via USB-A/C adapter.",
+        { id: "ha", vlan: "servers", ltr: true, name: "ameriDroid PoE Mini PC for Home Assistant", loc: "Rack Cabinet", href: "https://ameridroid.com/products/poe-mini-pc-for-home-assistant", info: "Cat6 rack patch to XG. 4×2.5G Intel I225/I226: one PoE++ IN plus three unused NICs are shown upstream. Two nested ZBT-2 radios: Zigbee on USB-C, Thread on USB-3 via USB-A/C adapter.",
           embed: [
             { name: "Connect ZBT-2 · Zigbee", href: "https://www.home-assistant.io/connect/zbt-2/" },
             { name: "Connect ZBT-2 · Thread", href: "https://www.home-assistant.io/connect/zbt-2/" }
@@ -190,10 +227,10 @@
         { id: "drop-media-bak", backup: true, name: "UACC-Keystone-Jack-C6A", loc: "Basement/Media Room", href: UI + "uacc-keystone-jack-c6a", info: "Backup C6A. Terminated at the patch panel; not patched to XG.",
           up: [P("drop-media-bak-up", "gbe10", { poe: "ppp", title: "10G backup keystone · wired to loose cabinet end" })],
           down: [P("drop-media-bak-dn", "gbe10", { poe: "ppp", title: "10G unused", idle: true })] },
-        { id: "drop-media", name: "UACC-Keystone-Jack-C6A", loc: "Basement/Media Room", href: UI + "uacc-keystone-jack-c6a", info: "Active C6A home-run → non-PoE Flex 2.5G at 10G. The second run is shown above as a separate dashed backup card.",
+        { id: "drop-media", name: "UACC-Keystone-Jack-C6A", loc: "Basement/Media Room", href: UI + "uacc-keystone-jack-c6a", info: "Active C6A home-run → Cat6 short patch → non-PoE Flex 2.5G at 10G. The second run is shown above as a separate dashed backup card.",
           up: [P("drop-media-up", "gbe10", { poe: "ppp", title: "10G ← Pro XG" })],
           down: [P("drop-media-dn", "gbe10", { poe: "ppp", title: "10G PoE+++ pass-through → Flex 2.5G at PoE+", child: "media-flex" })] },
-        { id: "media-flex", vlan: "management", ltr: true, name: "USW-Flex-2.5G-8", loc: "Basement/Media Room", href: "https://store.ui.com/us/en/category/switching-utility/products/usw-flex-2-5g-8", info: "Non-PoE model. 10G RJ45/SFP+ combo uplink; powered through the 10G RJ45 at PoE+. Eight 2.5G downlinks have no PoE output.",
+        { id: "media-flex", vlan: "management", ltr: true, name: "USW-Flex-2.5G-8", loc: "Basement/Media Room", href: "https://store.ui.com/us/en/category/switching-utility/products/usw-flex-2-5g-8", info: "Non-PoE model. C6A home-run ends at the wall; a Cat6 short patch feeds its 10G RJ45/SFP+ combo uplink and PoE+ input. Eight 2.5G downlinks have no PoE output.",
           poeBar: { used: 14, cap: 30 },
           up: [
             P("media-flex-up", "gbe10", { poe: "plus", title: "10G RJ45 uplink · PoE+ input" }),
@@ -325,10 +362,10 @@
         { id: "drop-gar-bak", backup: true, name: "UACC-Keystone-Jack-C6A", loc: "Garage", href: UI + "uacc-keystone-jack-c6a", info: "Backup C6A. Terminated at both ends; cabinet end is not connected to XG.",
           up: [P("drop-gar-bak-up", "gbe10", { poe: "ppp", title: "10G backup keystone · wired to loose cabinet end" })],
           down: [P("drop-gar-bak-dn", "gbe10", { poe: "ppp", title: "10G unused", idle: true })] },
-        { id: "drop-gar", name: "UACC-Keystone-Jack-C6A", loc: "Garage", href: UI + "uacc-keystone-jack-c6a", info: "C6A home-run → certified Cat6 short patch → Flex 10G. The second wired run is shown above with a dashed device frame.",
+        { id: "drop-gar", name: "UACC-Keystone-Jack-C6A", loc: "Garage", href: UI + "uacc-keystone-jack-c6a", info: "C6A home-run → Type 4 / 4PPoE Cat6 short patch → Flex 10G/PoE+++. The second wired run is shown above with a dashed device frame.",
           up: [P("drop-gar-xg", "gbe10", { poe: "ppp", title: "10G ← Pro XG" })],
           down: [P("drop-gar-flex", "gbe10", { poe: "ppp", title: "10G → Flex", child: "flex" })] },
-        { id: "flex", vlan: "management", ltr: true, name: "USW-Flex-2.5G-8-PoE", loc: "Garage", href: UI + "usw-flex-2-5g-8-poe", info: "10G RJ45 uplink through the C6A home-run and a certified Cat6 short patch. SFP+ idle (combo). 8×2.5G PoE++. AC-210W nested.",
+        { id: "flex", vlan: "management", ltr: true, name: "USW-Flex-2.5G-8-PoE", loc: "Garage", href: UI + "usw-flex-2-5g-8-poe", info: "10G/PoE+++ uplink through C6A + Type 4 / 4PPoE Cat6 short patch. SFP+ idle (combo). 8×2.5G PoE++. AC-210W nested.",
           embed: [{ name: "UACC-Adapter-AC-210W", href: UI + "uacc-adapter-ac-210w" }],
           devicePower: { value: "17W AC / 14W PoE+++" },
           poeBar: { modes: [
@@ -340,10 +377,10 @@
             P("flex-sfp", "sfp", { t: "SFP+", title: "SFP+ unused · combo", idle: true })
           ],
           down: [
-            P("flex-gmin", "gbe2p5", { poe: "pp", title: "2.5G PoE++ → Garage Mini", child: "group-garage-door" }),
-            P("flex-tesla", "gbe2p5", { poe: "pp", title: "2.5G PoE++ port → PW3 Leader at 1G", child: "pw-lead" }),
-            P("flex-usl", "gbe2p5", { poe: "pp", title: "2.5G PoE++ port → USL at 100M PoE", child: "usl" }),
             P("flex-lite", "gbe2p5", { poe: "pp", title: "2.5G PoE++ port → U7-Lite at PoE", child: "lite" }),
+            P("flex-usl", "gbe2p5", { poe: "pp", title: "2.5G PoE++ port → USL at 100M PoE", child: "usl" }),
+            P("flex-tesla", "gbe2p5", { poe: "pp", title: "2.5G PoE++ port → PW3 Leader at 1G", child: "pw-lead" }),
+            P("flex-gmin", "gbe2p5", { poe: "pp", title: "2.5G PoE++ → Garage Mini", child: "group-garage-door" }),
             P("flex-x1", "gbe2p5", { poe: "pp", title: "2.5G PoE++ unused", idle: true }),
             P("flex-x2", "gbe2p5", { poe: "pp", title: "2.5G PoE++ unused", idle: true }),
             P("flex-x3", "gbe2p5", { poe: "pp", title: "2.5G PoE++ unused", idle: true }),
@@ -468,16 +505,16 @@
         "din-mini": ["din-g3", "walk", "din-strike"],
         "bsmt-mini": ["bsmt-g3", "cam-ct", "bsmt-strike"],
         "drop-gar": ["flex"],
-        flex: ["group-garage-door", "pw-lead", "usl", "lite"],
+        flex: ["lite", "usl", "pw-lead", "group-garage-door"],
         "pw-lead": ["pw-follow", "gw3"]
       };
 
       var links = [
-        { from: "nah", fp: "nah-10g", to: "udm", tp: "udm-wan", cable: "cat6a", route: "vertical", info: "NAH 10G RJ45 → Cat6A → CM RJ45; CM SFP+ is inserted in UDM WAN." },
+        { from: "nah", fp: "nah-10g", to: "udm", tp: "udm-wan", cable: "cat6", route: "vertical", info: "NAH 10G RJ45 → Cat6 rack patch → CM RJ45; CM SFP+ is inserted in UDM WAN." },
         { from: "udm", fp: "udm-lan-sfp", to: "xg", tp: "xg-sfp", cable: "dac", route: "vertical", label: "UACC-DAC-SFP10", href: UI + "10gbps-direct-attach-cable", info: "One UACC-DAC-SFP10: UDM LAN SFP+ → Pro XG SFP28 at 10G." },
-        { from: "xg", fp: "xg-nas", to: "nas", tp: "nas-10g", info: "Pro XG 10G → NAS LACP." },
-        { from: "xg", fp: "xg-nas2", to: "nas", tp: "nas-10g2", info: "Pro XG 10G → NAS LACP." },
-        { from: "xg", fp: "xg-ha", to: "ha", tp: "ha-up", info: "Pro XG 2.5G PoE+++ port → HA Mini PC at PoE++." },
+        { from: "xg", fp: "xg-nas", to: "nas", tp: "nas-10g", cable: "cat6", info: "Pro XG 10G → Cat6 rack patch → NAS LACP." },
+        { from: "xg", fp: "xg-nas2", to: "nas", tp: "nas-10g2", cable: "cat6", info: "Pro XG 10G → Cat6 rack patch → NAS LACP." },
+        { from: "xg", fp: "xg-ha", to: "ha", tp: "ha-up", cable: "cat6", info: "Pro XG 2.5G PoE+++ port → Cat6 rack patch → HA Mini PC at PoE++." },
         { from: "xg", fp: "xg-u7b", to: "u7b", tp: "u7b-up", info: "Pro XG → U7-Pro Basement." },
         { from: "xg", fp: "xg-u7m", to: "u7m", tp: "u7m-up", info: "Pro XG → U7-Pro Main." },
         { from: "xg", fp: "xg-u7u", to: "u7u", tp: "u7u-up", info: "Pro XG → U7-Pro Upper." },
@@ -492,7 +529,7 @@
         { from: "xg", fp: "xg-seat-bak", to: "drop-seat-bak", tp: "drop-seat-bak-up", info: "Pro XG reserved → Seating C6A backup." },
         { from: "xg", fp: "xg-seat", to: "drop-seat", tp: "drop-seat-up", info: "Pro XG → Seating C6A." },
         { from: "xg", fp: "xg-gar", to: "drop-gar", tp: "drop-gar-xg", info: "Pro XG → Garage C6A." },
-        { from: "drop-gar", fp: "drop-gar-flex", to: "flex", tp: "flex-up", cable: "cat6", info: "Garage C6A home-run → certified Cat6 short patch → Flex 10G RJ45 / PoE+++ input." },
+        { from: "drop-gar", fp: "drop-gar-flex", to: "flex", tp: "flex-up", cable: "cat6", info: "Garage C6A home-run → Type 4 / 4PPoE-rated 24–26AWG pure-copper Cat6 short patch → Flex 10G RJ45 / PoE+++ input." },
         { from: "xg", fp: "xg-front", to: "front-mini", tp: "front-mini-up", info: "Pro XG → Front Mini." },
         { from: "front-mini", fp: "front-mini-poe1", to: "front-entry", tp: "front-entry-up", info: "Front Mini PoE+ → Entry." },
         { from: "front-mini", fp: "front-mini-poe2", to: "cam-fy", tp: "cam-fy-up", cable: "cat6", info: "Front Mini PoE+ → Frontyard Turret." },
@@ -578,7 +615,7 @@
         { from: "xg", fp: "xg-room-live", to: "group-room-drops", tp: "drop-den-up", info: "5× Pro XG → active Room Drop." },
         { from: "xg", fp: "xg-media-backup", to: "drop-media-bak", tp: "drop-media-bak-up", info: "Wired Media Room backup → loose cabinet end; not connected to XG." },
         { from: "xg", fp: "xg-media-live", to: "drop-media", tp: "drop-media-up", info: "Pro XG 10G PoE+++ port → active Media Room Drop." },
-        { from: "drop-media", fp: "drop-media-dn", to: "media-flex", tp: "media-flex-up", cable: "cat6a", route: "horizontal", info: "Media Room C6A → non-PoE Flex 2.5G at 10G with PoE+ input." },
+        { from: "drop-media", fp: "drop-media-dn", to: "media-flex", tp: "media-flex-up", cable: "cat6", route: "horizontal", info: "Media Room C6A wall jack → Cat6 short patch → non-PoE Flex 2.5G at 10G with PoE+ input." },
         { from: "xg", fp: "xg-gar-backup", to: "drop-gar-bak", tp: "drop-gar-bak-up", info: "Wired Garage backup Room Drop → loose cabinet end; not connected to XG." }
       ]);
 
@@ -1375,7 +1412,9 @@
             if (els[childId]) maxBottom = Math.max(maxBottom, els[childId].getBoundingClientRect().bottom);
           });
         }
-        el.style.height = Math.ceil(maxBottom - er.top + (parseFloat(cs.paddingBottom) || 0)) + "px";
+        var bottomPad = id === "flex" ? 0 : (parseFloat(cs.paddingBottom) || 0);
+        var targetHeight = maxBottom - er.top + bottomPad;
+        el.style.height = (id === "flex" ? Math.round(targetHeight) : Math.ceil(targetHeight)) + "px";
       }
 
       function pinTrailingIdleSlots(id, col, slots, suppliedSpecs, suppliedGap) {
@@ -1671,37 +1710,67 @@
         });
       }
 
+      function xgBranchBox(id) {
+        var box = treeBox(id);
+        var backupId = pairedBackupId(id);
+        if (!backupId || !els[backupId]) return box;
+        var backupTop = parseFloat(els[backupId].style.top || 0);
+        return {
+          top: Math.min(box.top, backupTop),
+          bottom: Math.max(box.bottom, backupTop + els[backupId].offsetHeight),
+          left: Math.min(box.left, parseFloat(els[backupId].style.left || 0)),
+          right: Math.max(box.right, parseFloat(els[backupId].style.left || 0) + els[backupId].offsetWidth)
+        };
+      }
+
+      function shiftXgBranch(id, dy) {
+        if (Math.abs(dy) < 0.01) return;
+        shiftTree(id, 0, dy);
+        var backupId = pairedBackupId(id);
+        if (backupId && els[backupId]) shiftTree(backupId, 0, dy);
+      }
+
       function balanceXgBranchExtents() {
         var left = xgBranchSlots("left").filter(function (slot) { return slot.child; });
         var right = xgBranchSlots("right").filter(function (slot) { return slot.child; });
         if (left.length < 2 || right.length < 2) return;
-        var leftTop = treeBox(left[0].child).top;
-        var leftBottom = treeBox(left[left.length - 1].child).bottom;
-        var boxes = right.map(function (slot) {
-          var box = treeBox(slot.child);
-          var backupId = pairedBackupId(slot.child);
-          if (backupId && els[backupId]) {
-            var backupTop = parseFloat(els[backupId].style.top || 0);
-            box = {
-              top: Math.min(box.top, backupTop),
-              bottom: Math.max(box.bottom, backupTop + els[backupId].offsetHeight),
-              left: box.left,
-              right: box.right
-            };
-          }
-          return box;
-        });
+        var leftTop = xgBranchBox(left[0].child).top;
+        var leftBottom = xgBranchBox(left[left.length - 1].child).bottom;
+        var boxes = right.map(function (slot) { return xgBranchBox(slot.child); });
         var occupied = boxes.reduce(function (sum, box) { return sum + box.bottom - box.top; }, 0);
         var gap = Math.max(GAP_Y, ((leftBottom - leftTop) - occupied) / (right.length - 1));
         var cursor = leftTop;
         right.forEach(function (slot, index) {
           var dy = cursor - boxes[index].top;
-          if (Math.abs(dy) >= 0.4) shiftTree(slot.child, 0, dy);
-          var backupId = pairedBackupId(slot.child);
-          if (backupId && els[backupId] && Math.abs(dy) >= 0.4) {
-            shiftTree(backupId, 0, dy);
-          }
+          shiftXgBranch(slot.child, dy);
           cursor += boxes[index].bottom - boxes[index].top + gap;
+        });
+      }
+
+      function alignXgBranchBottoms() {
+        if (!els.xg) return;
+        var targetBottom = els.xg.getBoundingClientRect().bottom;
+        var stageRect = stage.getBoundingClientRect();
+        var scaleY = stage.offsetHeight ? stageRect.height / stage.offsetHeight : 1;
+        function renderedBottom(id) {
+          var bottom = els[id].getBoundingClientRect().bottom;
+          stageKids(id).forEach(function (childId) {
+            bottom = Math.max(bottom, renderedBottom(childId));
+          });
+          var backupId = pairedBackupId(id);
+          if (backupId && els[backupId]) {
+            bottom = Math.max(bottom, els[backupId].getBoundingClientRect().bottom);
+          }
+          return bottom;
+        }
+        ["left", "right"].forEach(function (side) {
+          var roots = xgBranchSlots(side).filter(function (slot) { return slot.child; });
+          if (!roots.length) return;
+          var bottom = Math.max.apply(null, roots.map(function (slot) {
+            return renderedBottom(slot.child);
+          }));
+          var dy = (targetBottom - bottom) / scaleY;
+          roots.forEach(function (slot) { shiftXgBranch(slot.child, dy); });
         });
       }
 
@@ -2048,6 +2117,51 @@
         shiftTree("media-flex", 0, dropY - switchY);
       }
 
+      function spaceGarageFlexBranches() {
+        var flex = els.flex;
+        var roots = ["lite", "usl", "pw-lead", "group-garage-door"];
+        if (!flex || roots.some(function (id) { return !els[id]; })) return;
+        var fixedHeight = flex.style.height || (flex.offsetHeight + "px");
+        var frame = flex.getBoundingClientRect();
+        var stageRect = stage.getBoundingClientRect();
+        var scaleY = stage.offsetHeight ? stageRect.height / stage.offsetHeight : 1;
+
+        function renderedTreeBounds(id) {
+          var rect = els[id].getBoundingClientRect();
+          var bounds = { top: rect.top, bottom: rect.bottom };
+          stageKids(id).forEach(function (childId) {
+            var child = renderedTreeBounds(childId);
+            bounds.top = Math.min(bounds.top, child.top);
+            bounds.bottom = Math.max(bounds.bottom, child.bottom);
+          });
+          return bounds;
+        }
+
+        var boxes = roots.map(renderedTreeBounds);
+        var occupied = boxes.reduce(function (sum, box) {
+          return sum + box.bottom - box.top;
+        }, 0);
+        var gap = roots.length > 1 ? Math.max(0, (frame.height - occupied) / (roots.length - 1)) : 0;
+        var cursor = frame.top;
+        roots.forEach(function (id, index) {
+          shiftTree(id, 0, (cursor - boxes[index].top) / scaleY);
+          cursor += boxes[index].bottom - boxes[index].top + gap;
+        });
+
+        pinDownPorts("flex");
+        flex.style.height = fixedHeight;
+        var col = flex.querySelector(":scope > .topo-ports.down");
+        var fourthPort = portEl("flex-gmin");
+        var idlePort = portEl("flex-x1");
+        var idleSlot = idlePort && idlePort.closest(".topo-slot");
+        if (col && fourthPort && idleSlot) {
+          var colRect = col.getBoundingClientRect();
+          var fourthRect = fourthPort.getBoundingClientRect();
+          var defaultGap = parseFloat(window.getComputedStyle(col).rowGap) || 0;
+          idleSlot.style.top = (fourthRect.bottom - colRect.top + defaultGap) + "px";
+        }
+      }
+
       function relayout() {
         subH = {};
         subW = {};
@@ -2057,16 +2171,20 @@
         placeDenseTopology();
         separateSiblings("flex");
         pinAllFanout();
+        spaceGarageFlexBranches();
         pinBackupPairs();
         alignGarageUplink();
         alignMediaSwitchUplink();
         balanceXgBranchExtents();
+        alignXgBranchBottoms();
         pinXgPorts();
         clampOrigin();
         pinAllFanout();
+        spaceGarageFlexBranches();
         pinBackupPairs();
         alignGarageUplink();
         alignMediaSwitchUplink();
+        alignXgBranchBottoms();
         pinXgPorts();
         paintLinks();
       }
@@ -2090,7 +2208,7 @@
       pageStyle.id = "print-page-size";
 
       function sourceFor(kind) {
-        if (kind === "legend") return document.getElementById("legend-source");
+        if (kind === "legend") return document.querySelector("#legend-source .spa-legend-content");
         if (kind === "devices") return document.querySelector("#tab-devices .spa-main > table");
         if (kind === "topology") return document.querySelector("#topo-canvas .topo-stage");
         return null;

@@ -6,25 +6,26 @@
   <h2>设计说明</h2>
   <p class="lede">Whole-home hardware inventory: ISP / WAN, gateway, switching, room drops, Wi‑Fi, Protect &amp; Access, Home Assistant, NAS, and IoT. <strong>PoE Uplink</strong> 中继设备：大字 <span class="poe-lbl">w/</span> = with PoE output；小字 <span class="poe-lbl">w/o</span> = without PoE output。数字无 <code>≤</code> 为设备自身功耗；<code>≤</code> / <code>Σ≤</code> 为端口或供电合计上限。</p>
   <p class="lede">机柜在 Mechanical / Electrical Room，核心为 <strong>UDM-Pro-Max + USW-Pro-XG-24-PoE</strong>；Media Room 使用非 PoE <strong>USW-Flex-2.5G-8</strong>，经 active Media C6A 获得 10G + PoE+ input；车库 <strong>USW-Flex-2.5G-8-PoE</strong>（210W AC）经 Garage C6A 上联。七间各两根 Cat6A，每间只 patch 一根。五扇门各一套 Door Mini + Strike；前门配 G6 Pro Entry，其余配 UA-G3。每套 Mini 的第二个 PoE+ 口下挂一台对应位置的 Protect 摄像头；USL 仍直连 Garage Flex。Tesla 链只挂 Garage Flex。HA 主机嵌两根 ZBT-2（Zigbee + Thread）。</p>
+  <p class="lede"><strong>统一铜缆标准：</strong>本项目所有 Cat6 / Cat6A 均按 IEEE 802.3bt <strong>Type 4 / 4PPoE</strong> 完整通道选材和验收；范围包含永久链路、跳线、keystone、配线架及端接。Type 4 表示供电承载能力，不改变 Cat6 / Cat6A 的数据类别；数据专用链路不会因此主动送电。</p>
 
   <h3>选型结论</h3>
   <ul>
     <li><strong>核心 → UDM-Pro-Max + Pro XG</strong>：TELUS 5G WAN 进 UDM；Pro XG 出 PoE+++ 给 AP、门禁、HA Wallpanel、room drop 与车库上联。</li>
-    <li><strong>NAH → UDM</strong>：光纤已在 NAH 终结，不用外置光电转换盒。NAH 的 10G RJ45 进 UDM WAN SFP+，用 <strong>UACC-CM-RJ45-MG</strong>（1/2.5/5/10G）。直插 UDM 2.5G WAN 口会把 5G 套餐卡在 2.5G。</li>
+    <li><strong>NAH → UDM</strong>：光纤已在 NAH 终结，不用外置光电转换盒。NAH 的 10G RJ45 经机柜内 Cat6 短跳进入 UDM WAN SFP+ 中的 <strong>UACC-CM-RJ45-MG</strong>（1/2.5/5/10G）。短距离 Cat6 不会把 5G/10G 降速；直插 UDM 2.5G WAN 口才会把 5G 套餐卡在 2.5G。</li>
     <li><strong>UDM → Pro XG</strong>：机柜内 <strong>UACC-DAC-SFP10</strong>（SFP+ ↔ Pro XG 的 SFP28，10G）。短、稳、不必再占铜口。</li>
-    <li><strong>Media Room 交换机 → USW-Flex-2.5G-8</strong>：明确采用<strong>非 PoE 输出版本</strong>。active Media C6A 接其 10G RJ45 / SFP+ combo uplink，并由 XG 协商 PoE+ input（整机最大 14W）；八个 2.5G 下联口只传数据。备用 Media C6A 仍终结但不 patch。</li>
-    <li><strong>车库交换机 → USW-Flex-2.5G-8-PoE</strong>：上联为 Garage C6A home-run + Flex 端认证纯铜 Cat6 短跳；该短跳可保持 10GBASE-T 与 PoE+++，不降低端口能力。210W AC 保 PoE 裕量。SFP+ 与 10G RJ45 是 combo，数据只能一路。</li>
+    <li><strong>Media Room 交换机 → USW-Flex-2.5G-8</strong>：明确采用<strong>非 PoE 输出版本</strong>。active Media C6A home-run 在墙口后用 Cat6 短跳接入 10G RJ45 / SFP+ combo uplink，并由 XG 协商 PoE+ input（整机最大 14W）；八个 2.5G 下联口只传数据。备用 Media C6A 仍终结但不 patch。</li>
+    <li><strong>车库交换机 → USW-Flex-2.5G-8-PoE</strong>：上联为 Garage C6A home-run + Flex 端 802.3bt Type 4 / 4PPoE 额定、24–26AWG 纯铜 Cat6 短跳；它仍属于 Cat6，且可保持 10GBASE-T 与 PoE+++，不降低端口能力。210W AC 保 PoE 裕量。SFP+ 与 10G RJ45 是 combo，数据只能一路。</li>
     <li><strong>Garage room drop → C6A ×2</strong>：与全屋一致拉两根；一根 patch 到 XG 做 Flex 上联，另一根在配线架待命。永久链路仍按 C6A 预留 10G；仅 Flex 旁短跳改用 Cat6。车库出口只出一个插口。</li>
     <li><strong>室内 Room Drop → 每间两根 C6A</strong>：七间一律两根 home-run 到配线架。Media / Den 墙面出<strong>双口 plate</strong>；Media 在用口下联非 PoE Flex，Den 在用口直连 Mac Studio，两个备用口都不 patch。其余五间（Master / BR1 / BR2 / Seating / Garage）出口只出一个插口，第二根作冗余备用、机柜端暂不 patch 到 XG。</li>
     <li><strong>备电</strong>：双 PW3 承担全屋持续供电。机柜 UPS 不是必须；仅当实测切换会重启核心设备、且不能接受短中断时，再加一台只桥接数分钟的小型 UPS。</li>
-    <li><strong>NAS → Synology FS2500</strong>：跑 DSM；家庭<strong>多负载存储与管理层</strong>（LLM 模型库、安防录像、影音、文件、Web 等）。算力主机是 Mac Studio（经 Den Room Drop 上 XG）。<strong>2×10G LACP → Pro XG</strong>；12×2.5&quot; SSD all-flash；容量经济学非优先。选型依据见下方「NAS 选型」。</li>
+    <li><strong>NAS → Synology FS2500</strong>：跑 DSM；家庭<strong>多负载存储与管理层</strong>（LLM 模型库、安防录像、影音、文件、Web 等）。算力主机是 Mac Studio（经 Den Room Drop 上 XG）。机柜内 <strong>2×Cat6 短跳承载 2×10G LACP → Pro XG</strong>；12×2.5&quot; SSD all-flash；容量经济学非优先。选型依据见下方「NAS 选型」。</li>
     <li><strong>Zigbee + Thread</strong>：两根 Connect ZBT-2 嵌在 HA Mini PC 内，无独立连线。Zigbee 占 USB-C，Thread 占 USB-3（需一枚 USB-A/C 数据转换头）。一根棒不能同时跑两种协议。</li>
     <li><strong>前门 → Mini + G6 Pro Entry + Frontyard Turret + Strike</strong>：Entry 与 Frontyard/Front Eave/North East 摄像头分别占用 Mini 的两个 PoE+ 口。</li>
     <li><strong>Mud / Dining / Basement / Garage 门</strong>：每套为 Mini + G3 + 一台 Protect 摄像头 + Strike；前三路上联 Pro XG，车库门上联 Flex。</li>
     <li><strong>门禁与机位对应</strong>：Frontyard → Front Door；Backyard → Main/Mud/Back Door；Walkway/Balcony Eave → Main/Dining/Back Door；Courtyard → Basement/Back Door；Laneway → Garage Door。</li>
     <li><strong>Viewport / USL</strong>：Viewport 直连 Pro XG；USL 直连 Flex，不经过 Door Mini。</li>
     <li><strong>HA Mini PC 口向</strong>：ameriDroid 文档为 4×2.5G Intel I225/I226，<strong>其中 1 口 PoE++ IN</strong> 为上行（供电+数据）；其余 3 口是主机 LAN NIC，不是交换机下联，图中与上行口同放左侧，现空闲。</li>
-    <li><strong>线材</strong>：接到 <strong>XG</strong> 的入墙 / home-run（含 Garage C6A、主屋 Door Mini、AP、Wallpanel、NAS）一律 <strong>Cat6A 实心铜</strong>——10G 口与 PoE+++（90W）不能被线材卡住。不升级：没有需要超 Cat6A 的铜链路（25G 走 SFP/DAC）。<strong>Cat6</strong>：Garage 墙口 → Flex 短跳；各 Door Mini → 读头 / 对应摄像头；Flex → 车库 Mini、USL、U7-Lite、PW3 Leader；Tesla Leader↔Follower。机柜 UDM↔XG 用 SFP+ DAC；门锁 LOCK/DPS 用 12V；Tesla 控制用 CAN。ISP 进线是 TELUS XGS-PON，不进本图。ZBT USB 与 Flex AC 适配器是嵌套件，不画线。入墙不用 Cat5e / CCA。</li>
+    <li><strong>线材复核结论</strong>：所有永久入墙 / home-run（Garage、Media/Den/卧室 Room Drop、主屋 Door Mini、AP、Wallpanel、Viewport）继续用 <strong>Cat6A 实心铜</strong>，保证 100m 级 10G 与未来余量。<strong>Cat6 短跳</strong>用于 NAH→UDM、XG→HA、XG→FS2500 ×2、Media/Garage 墙口→Flex、各 Door Mini→读头/摄像头、Garage Flex→U7/USL/PW3/Door Mini、PW3 Leader→Follower；这些短距离链路不会被 Cat6 限速。所有 Cat6 / Cat6A 链路一律按 <strong>Type 4 / 4PPoE</strong> 完整通道配置，即线缆、跳线、keystone、配线架与端接均支持四对供电、DC 电阻及线对不平衡要求；禁用 CCA / 未标定细径线。实际无 PoE 或低功率端口仍只按设备能力协商，不会被强制送入 90W。UDM↔XG 用 SFP+ DAC；LOCK/DPS 用 12V；Tesla 控制用 CAN。</li>
   </ul>
 <h3>Pro XG 端口分配</h3>
   <ul>
@@ -38,8 +39,9 @@
 
   <h3>Flex 端口分配</h3>
   <ul>
-    <li><strong>Uplink</strong>：10G RJ45 ← Garage C6A home-run + Cat6 短跳（短跳保持 10G / PoE+++；AC 正常供电时仅承载数据）。SFP+ 空闲（combo，与 RJ45 不能同时传数据）。</li>
-    <li><strong>端口顺序</strong>：Garage Door Mini · PW3 Leader（PoE disabled）· USL-Gateway · U7-Lite · 空闲 ×4。</li>
+    <li><strong>Uplink</strong>：10G RJ45 ← Garage C6A home-run + Type 4 / 4PPoE 额定的 24–26AWG 纯铜 Cat6 短跳（短跳保持 10G / PoE+++；AC 正常供电时仅承载数据）。SFP+ 空闲（combo，与 RJ45 不能同时传数据）。</li>
+    <li><strong>端口顺序</strong>：U7-Lite · USL-Gateway · PW3 Leader（PoE disabled）· Garage Door Mini · 空闲 ×4。Flex 有八个 2.5G 下联口，四个已用，因此实际空闲数是 ×4，不是 ×3；分组后的倍率不会增加版面高度。</li>
+    <li><strong>供电建议</strong>：PoE+++ 输入模式下 55.4/76W，理论余量 20.6W，当前负载可运行；但该值未扣除 Garage 长链路损耗，也几乎封死四个闲置 PoE++ 口的扩展能力。由于 Garage AC 受全屋 Powerwall 备电，仍建议 210W AC 作为正常方案，获得 140.6W 输出余量；PoE+++ 仅作为不扩容时的可行简化方案。</li>
     <li><strong>Door Mini（车库）</strong>：PoE+ ×2 → UA-G3 + Laneway/Garage/South Turret；LOCK/DPS → Strike；REX 空闲。</li>
   </ul>
 
@@ -50,6 +52,50 @@
     <li><strong>故障域</strong>：接受 Mini 重启时对应门口摄像头同时短暂离线，以换取释放 XG / Flex 端口。</li>
     <li><strong>边界</strong>：每套 Mini 只挂一个 Reader + 一个 Camera；USL 仍直连 Flex，不挤占 Mini 端口或预算。</li>
   </ol>
+
+  <h3>门锁 Access Status</h3>
+  <p>五扇门一律使用 <strong>UACC-Lock-Strike-Secure-15mm</strong>，每把同时接通 Door Mini 的 <strong>LOCK（Wet 12V）</strong> 与 <strong>DPS</strong>。UniFi Access App 的门锁状态不是单一信号，而是这两路组合出来的；本宅因此能看到全部四种状态。REX 不是 Access Status，只是开锁输入（本宅各 Mini 的 REX 口空闲）。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>App 显示</th>
+        <th>LOCK 继电器</th>
+        <th>DPS 门磁</th>
+        <th>含义</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Locked</td>
+        <td>上锁</td>
+        <td>关闭</td>
+        <td>门关着，锁也锁着</td>
+      </tr>
+      <tr>
+        <td>Unlocked</td>
+        <td>开锁</td>
+        <td>关闭</td>
+        <td>已开锁，门尚未打开</td>
+      </tr>
+      <tr>
+        <td>Open</td>
+        <td>开锁</td>
+        <td>打开</td>
+        <td>合法开锁后，门已打开</td>
+      </tr>
+      <tr>
+        <td>Unauthorized Opening</td>
+        <td>上锁</td>
+        <td>打开</td>
+        <td>未开锁，门却被打开</td>
+      </tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><strong>LOCK</strong>：只报告“现在该不该开锁”。刷卡、App 远程开锁、REX / REN / REL 都会把它打到 Unlocked。</li>
+    <li><strong>DPS</strong>：只报告“门扇开没开”。没有 DPS 时，App 只能显示 Locked / Unlocked。</li>
+    <li><strong>本宅接线</strong>：Front / Mud / Dining / Basement / Garage 五把 Strike 都是 LOCK + DPS 双接，因此四种状态全部可用。</li>
+  </ul>
 
   <h3>Tesla 链</h3>
   <ul>
@@ -65,12 +111,12 @@
   <ul>
     <li>机柜在 Mechanical / Electrical Room：UDM · Pro XG · NAS · HA Mini PC。两根 ZBT-2 天线都出柜，彼此分开约 0.5–1 m，远离 USB 3 / SSD / AP。</li>
     <li>三层 AP、三套 HA PoE Wallpanel、四套主屋 Door Mini、Viewport → home-run 回 Pro XG；主屋摄像头先回各自 Door Mini，不再单独 home-run 到 XG。</li>
-    <li>七间各拉 <strong>两根 Cat6A</strong>，全部终结、测试、贴标到配线架。每间只 patch 一根到 XG。Media / Den 墙面双口 plate；Media active 口接非 PoE Flex，Den active 口接 Mac Studio，另一个口均贴「未连接」。其余五间墙面单口，第二根留在墙盒 / 配线架。</li>
-    <li>Garage C6A（在用）→ 认证纯铜 Cat6 短跳 → Flex uplink；Flex 旁预留 210W AC。车库第二根 C6A 同样待命。</li>
+    <li>七间各拉 <strong>两根 Cat6A</strong>，全部终结、测试、贴标到配线架。每间只 patch 一根到 XG。Media / Den 墙面双口 plate；Media active 口经 Cat6 短跳接非 PoE Flex，Den active 口接 Mac Studio，另一个口均贴「未连接」。其余五间墙面单口，第二根留在墙盒 / 配线架。</li>
+    <li>Garage C6A（在用）→ Type 4 / 4PPoE 额定的 24–26AWG 纯铜 Cat6 短跳 → Flex uplink；Flex 旁预留 210W AC。车库第二根 C6A 同样待命。</li>
     <li>各门：Reader 与对应 Protect 摄像头分别用 Cat6 接到就近 Mini 的两个 PoE+ 口；REX、Strike（LOCK Wet 12V + DPS）按门锁线。</li>
     <li>Walkway/Balcony Eave 摄像头回 Dining Mini；Laneway 摄像头回 Garage Mini；USL 单独用 Cat6 回 Flex。</li>
     <li>Tesla：1× CAN（GW3↔Leader）· 1× Cat6 ETH（Leader↔Follower）· 1× Cat6 ETH（Leader↔Flex）。</li>
-    <li>线材：XG 侧入墙 <strong>Cat6A</strong>；Flex 下联、门边读头、Tesla 1G 短跳用 Cat6；机柜 UDM↔XG 用 DAC；门锁 12V / Tesla CAN 按图例。Thread 棒另备一枚 USB-A/C 数据转换头。</li>
+    <li>线材：XG 侧永久入墙为 <strong>Cat6A</strong>；机柜内 NAH/HA/NAS 铜短跳、Media/Garage Flex 短跳、Flex 下联、门边读头及 Tesla 以太网用 Cat6；两类铜缆的完整通道均按 <strong>Type 4 / 4PPoE</strong> 验收。机柜 UDM↔XG 用 DAC；门锁 12V / Tesla CAN 按图例。Thread 棒另备一枚 USB-A/C 数据转换头。</li>
     <li>机械房就地短跳：从配线架拉到 HVAC 控制区、热水、集水坑附近各预留 1–2 个 keystone，供日后有线控制器或第二台 USL-Gateway；传感器本身走 SuperLink / Zigbee，不必每只都拉网线。</li>
   </ul>
   <div class="note">
@@ -79,6 +125,7 @@
     <a href="https://techspecs.ui.com/unifi/switching/usw-flex-2-5g-8" target="_blank" rel="noopener noreferrer">Flex 2.5G Specs</a> ·
     <a href="https://techspecs.ui.com/unifi/switching/usw-flex-2-5g-8-poe" target="_blank" rel="noopener noreferrer">Flex 2.5G PoE Specs</a> ·
     <a href="https://techspecs.ui.com/unifi/door-access/ua-hub-door-mini" target="_blank" rel="noopener noreferrer">Door Hub Mini Specs</a> ·
+    <a href="https://help.ui.com/hc/en-us/articles/25795833795223-Wiring-a-Door-Position-Sensor-to-the-UniFi-Access-Control-Hub" target="_blank" rel="noopener noreferrer">Door Position Sensor Wiring</a> ·
     <a href="https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/3/InstallManual/Gateway/3/en-us/GUID-B7C9DCFE-6689-4486-9C26-FD30FE8A5EC4.html" target="_blank" rel="noopener noreferrer">Install Multiple Powerwall 3</a> ·
     <a href="https://energylibrary.tesla.com/docs/Public/EnergyStorage/Powerwall/General/Datasheet/Gateway/3/en-us/Gateway-3-Datasheet.pdf" target="_blank" rel="noopener noreferrer">Gateway 3 Datasheet</a>
   </div>
@@ -215,11 +262,10 @@
   <p>不是因为这些终端需要 10G，而是固定设备没有必要长期占用无线 airtime。有线把电视墙和游戏机移出 Wi‑Fi 后，手机和 IoT 更稳。</p>
 
   <h3>Room Drop 与终端扩展路线</h3>
-  <p>七个房间（Media / Den / Master / BR1 / BR2 / Seating / Garage）一律 <strong>两根 Cat6A 实心铜 home-run</strong> 到机柜配线架，全部终结、认证、贴标。拓扑和 XG 只画 / 只 patch <strong>每间正在用的那一根</strong>。备用线占配线架，不占 XG 口。</p>
+  <p>七个房间（Media / Den / Master / BR1 / BR2 / Seating / Garage）一律 <strong>两根 Cat6A 实心铜 home-run</strong> 到机柜配线架，完整通道按 Type 4 / 4PPoE 选材，全部终结、认证、贴标。拓扑和 XG 只画 / 只 patch <strong>每间正在用的那一根</strong>。备用线占配线架，不占 XG 口。</p>
   <ul>
-    <li><strong>Media</strong>：在用口接 <strong>USW-Flex-2.5G-8（非 PoE 输出版）</strong>。10G RJ45 uplink 同时接受 XG 的 PoE+ 供电；八个 2.5G 口用于本室有线终端但不供电。第二根 C6A 保持未 patch。</li>
+    <li><strong>Media</strong>：在用 C6A 墙口经 Cat6 短跳接 <strong>USW-Flex-2.5G-8（非 PoE 输出版）</strong>。10G RJ45 uplink 同时接受 XG 的 PoE+ 供电；八个 2.5G 口用于本室有线终端但不供电。第二根 C6A 保持未 patch。</li>
     <li><strong>Den</strong>：在用口的主终端是 <strong>Mac Studio</strong>（机身 10GbE → 墙面 → C6A → Pro XG），与机柜 NAS 同交换域，承担本地 LLM 的有线数据面。双口 plate 的第二口仍贴「未连接」，对应未 patch 的备用 C6A。</li>
-    <li><strong>Media</strong>：同样双口 plate；为未来真实扩展预留，不是 Studio 位。</li>
     <li><strong>其余五间</strong>：第二根是冗余备用。墙面<strong>只出一个插口</strong>；第二根留在墙盒并在配线架贴备标，不做出第二口以免误插。</li>
   </ul>
   <p>终端入网按这条路线长，不跳级、不提前把交换机装进每个房间：</p>
