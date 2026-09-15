@@ -2308,6 +2308,43 @@
         return clone;
       }
 
+      function inlineSvgUses(root) {
+        if (!root) return;
+        Array.prototype.forEach.call(root.querySelectorAll("svg use"), function (use) {
+          var href = use.getAttribute("href") || use.getAttributeNS("http://www.w3.org/1999/xlink", "href") || "";
+          var id = href.split("#").pop();
+          var symbol = id && document.getElementById(id);
+          var svg = use.closest("svg");
+          if (!symbol || !svg) return;
+          if (!svg.getAttribute("viewBox") && symbol.getAttribute("viewBox")) {
+            svg.setAttribute("viewBox", symbol.getAttribute("viewBox"));
+          }
+          svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+          var color = window.getComputedStyle(svg).color || "#141414";
+          var sized = window.getComputedStyle(svg);
+          var width = parseFloat(sized.width);
+          var height = parseFloat(sized.height);
+          if (width && height) {
+            svg.setAttribute("width", String(width));
+            svg.setAttribute("height", String(height));
+          }
+          Array.prototype.forEach.call(symbol.childNodes, function (child) {
+            if (child.nodeType !== 1) return;
+            var copy = child.cloneNode(true);
+            if ((copy.getAttribute("fill") || "").toLowerCase() === "currentcolor") {
+              copy.setAttribute("fill", color);
+            }
+            Array.prototype.forEach.call(copy.querySelectorAll("[fill]"), function (el) {
+              if ((el.getAttribute("fill") || "").toLowerCase() === "currentcolor") {
+                el.setAttribute("fill", color);
+              }
+            });
+            svg.appendChild(copy);
+          });
+          use.parentNode.removeChild(use);
+        });
+      }
+
       function fitTarget(target) {
         var viewport = target && target.parentElement;
         var content = target && target.firstElementChild;
@@ -2368,6 +2405,7 @@
       }
 
       function captureNode(node, scale) {
+        inlineSvgUses(node);
         return window.html2canvas(node, {
           scale: scale || 2,
           useCORS: true,
@@ -2377,7 +2415,10 @@
           scrollX: 0,
           scrollY: 0,
           windowWidth: Math.max(node.scrollWidth, node.offsetWidth),
-          windowHeight: Math.max(node.scrollHeight, node.offsetHeight)
+          windowHeight: Math.max(node.scrollHeight, node.offsetHeight),
+          onclone: function (_doc, cloned) {
+            inlineSvgUses(cloned);
+          }
         });
       }
 
